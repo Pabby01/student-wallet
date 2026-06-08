@@ -23,7 +23,7 @@ function Home() {
   const [cats, setCats] = useState<Cat[]>([]);
   const [recent, setRecent] = useState<Exp[]>([]);
   const [alertCount, setAlertCount] = useState(0);
-  const [activeGoal, setActiveGoal] = useState<{ name: string; current_amount: number; target_amount: number } | null>(null);
+  const [activeGoal, setActiveGoal] = useState<{ name: string; current_amount: number | null; target_amount: number } | null>(null);
   const [openSheet, setOpenSheet] = useState(false);
   const [tick, setTick] = useState(0);
 
