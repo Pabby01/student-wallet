@@ -14,7 +14,229 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          action_taken: boolean | null
+          alert_type: string | null
+          category_id: string | null
+          created_at: string | null
+          id: string
+          message: string | null
+          user_id: string
+          was_read: boolean | null
+        }
+        Insert: {
+          action_taken?: boolean | null
+          alert_type?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          user_id: string
+          was_read?: boolean | null
+        }
+        Update: {
+          action_taken?: boolean | null
+          alert_type?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          user_id?: string
+          was_read?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budgets: {
+        Row: {
+          created_at: string | null
+          id: string
+          month: string
+          total_amount: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          month: string
+          total_amount?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          month?: string
+          total_amount?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          allocated: number | null
+          bucket: string | null
+          color: string | null
+          created_at: string | null
+          icon: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          spent: number | null
+          user_id: string
+        }
+        Insert: {
+          allocated?: number | null
+          bucket?: string | null
+          color?: string | null
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          spent?: number | null
+          user_id: string
+        }
+        Update: {
+          allocated?: number | null
+          bucket?: string | null
+          color?: string | null
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          spent?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category_id: string | null
+          created_at: string | null
+          date: string
+          description: string | null
+          id: string
+          is_anomaly: boolean | null
+          merchant: string | null
+          receipt_url: string | null
+          user_id: string
+          was_scanned: boolean | null
+        }
+        Insert: {
+          amount: number
+          category_id?: string | null
+          created_at?: string | null
+          date: string
+          description?: string | null
+          id?: string
+          is_anomaly?: boolean | null
+          merchant?: string | null
+          receipt_url?: string | null
+          user_id: string
+          was_scanned?: boolean | null
+        }
+        Update: {
+          amount?: number
+          category_id?: string | null
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          id?: string
+          is_anomaly?: boolean | null
+          merchant?: string | null
+          receipt_url?: string | null
+          user_id?: string
+          was_scanned?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          department: string | null
+          full_name: string | null
+          id: string
+          matric_number: string | null
+          monthly_allowance: number | null
+          onboarded: boolean | null
+          updated_at: string | null
+          year_of_study: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          department?: string | null
+          full_name?: string | null
+          id: string
+          matric_number?: string | null
+          monthly_allowance?: number | null
+          onboarded?: boolean | null
+          updated_at?: string | null
+          year_of_study?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          department?: string | null
+          full_name?: string | null
+          id?: string
+          matric_number?: string | null
+          monthly_allowance?: number | null
+          onboarded?: boolean | null
+          updated_at?: string | null
+          year_of_study?: number | null
+        }
+        Relationships: []
+      }
+      savings_goals: {
+        Row: {
+          created_at: string | null
+          current_amount: number | null
+          id: string
+          name: string
+          status: string | null
+          target_amount: number
+          target_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_amount?: number | null
+          id?: string
+          name: string
+          status?: string | null
+          target_amount: number
+          target_date: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_amount?: number | null
+          id?: string
+          name?: string
+          status?: string | null
+          target_amount?: number
+          target_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
