@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { motion, useScroll, useTransform, useSpring, useReducedMotion } from "framer-motion";
 import {
@@ -12,14 +12,11 @@ import {
   ShieldCheck,
   Smartphone,
   ArrowRight,
-  Twitter,
-  Instagram,
-  Github,
   Star,
-  Menu,
 } from "lucide-react";
-import { useState } from "react";
-import { Logo } from "@/components/Logo";
+import { SiteHeader } from "@/components/site/SiteHeader";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { TiltCard } from "@/components/TiltCard";
 import heroPhone from "@/assets/hero-phone.jpg";
 import students from "@/assets/students.jpg";
 
@@ -53,7 +50,7 @@ function Landing() {
       <LogoMarquee />
       <Features />
       <ShowcaseParallax />
-      <HowItWorks />
+      <HowItWorksTeaser />
       <Testimonials />
       <FinalCTA />
       <SiteFooter />
