@@ -197,3 +197,4 @@ function Ring({ percent }: { percent: number }) {
     </div>
   );
 }
+
