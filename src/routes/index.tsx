@@ -371,14 +371,18 @@ function ShowcaseParallax() {
             ))}
           </ul>
         </motion.div>
-        <motion.div style={{ y: y2, rotate: rot }} className="relative">
-          <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-accent opacity-25 blur-3xl" />
-          <img
-            src={students}
-            alt="Nigerian students using StudentFinance+"
-            loading="lazy"
-            className="w-full rounded-[2rem] border border-white/10 object-cover shadow-2xl"
-          />
+        <motion.div style={{ y: y2, rotate: rot }}>
+          <TiltCard className="rounded-[2rem]" max={12}>
+            <div className="relative">
+              <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-accent opacity-25 blur-3xl" />
+              <img
+                src={students}
+                alt="Nigerian students using StudentFinance+"
+                loading="lazy"
+                className="w-full rounded-[2rem] border border-white/10 object-cover shadow-2xl"
+              />
+            </div>
+          </TiltCard>
         </motion.div>
       </div>
     </section>
@@ -489,27 +493,13 @@ function Testimonials() {
         ))}
       </div>
 
-      {/* FAQ */}
-      <div id="faq" className="mx-auto mt-20 max-w-3xl">
-        <h3 className="text-center text-2xl font-bold sm:text-3xl">Quick questions</h3>
-        <div className="mt-8 space-y-3">
-          {[
-            ["Is it really free?", "Yes — completely free for students. We may add optional premium features later."],
-            ["Do I have to link my bank?", "Nope. StudentFinance+ is cash-first. You can use it without any bank account."],
-            ["Does it work offline?", "Yes. Add expenses without internet; they sync when you reconnect."],
-            ["Is my data safe?", "Your data is encrypted and only visible to you. We never sell it."],
-          ].map(([q, a]) => (
-            <details key={q} className="group glass rounded-2xl px-5 py-4">
-              <summary className="cursor-pointer list-none text-sm font-semibold">
-                <div className="flex items-center justify-between">
-                  {q}
-                  <span className="text-white/50 transition-transform group-open:rotate-45">+</span>
-                </div>
-              </summary>
-              <p className="mt-2 text-sm text-white/70">{a}</p>
-            </details>
-          ))}
-        </div>
+      <div className="mt-16 text-center">
+        <Link
+          to="/faq"
+          className="inline-flex items-center gap-2 rounded-2xl glass px-5 py-3 text-sm font-semibold hover:bg-white/10"
+        >
+          Read the FAQ <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
     </section>
   );
