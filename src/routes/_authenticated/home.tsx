@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatNaira, pct, statusFromPct } from "@/lib/format";
 import { AddExpenseSheet } from "@/components/AddExpenseSheet";
+import { Walkthrough } from "@/components/Walkthrough";
 import { Plus, Sparkles, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/home")({
@@ -171,6 +172,7 @@ function Home() {
       </motion.button>
 
       <AddExpenseSheet open={openSheet} onClose={() => setOpenSheet(false)} onSaved={() => setTick((t) => t + 1)} />
+      <Walkthrough />
     </AppShell>
   );
 }
