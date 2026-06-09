@@ -185,6 +185,9 @@ function Hero() {
     });
   }
 
+  const rotY = useTransform(sx, (v) => v * 0.6);
+  const rotX = useTransform(sy, (v) => -v * 0.6);
+
   return (
     <section ref={ref} onMouseMove={onMove} className="relative pt-32 pb-16 sm:pt-36 sm:pb-24">
       {/* glow blobs */}
@@ -267,8 +270,8 @@ function Hero() {
               rotate: rotPhone,
               scale: scalePhone,
               x: sx,
-              rotateY: useTransform(sx, (v) => v * 0.6),
-              rotateX: useTransform(sy, (v) => -v * 0.6),
+              rotateY: rotY,
+              rotateX: rotX,
               transformStyle: "preserve-3d",
             }}
             className="relative"
