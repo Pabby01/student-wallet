@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { motion, useScroll, useTransform, useSpring, useReducedMotion } from "framer-motion";
 import {
@@ -12,14 +12,11 @@ import {
   ShieldCheck,
   Smartphone,
   ArrowRight,
-  Twitter,
-  Instagram,
-  Github,
   Star,
-  Menu,
 } from "lucide-react";
-import { useState } from "react";
-import { Logo } from "@/components/Logo";
+import { SiteHeader } from "@/components/site/SiteHeader";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { TiltCard } from "@/components/TiltCard";
 import heroPhone from "@/assets/hero-phone.jpg";
 import students from "@/assets/students.jpg";
 
@@ -53,7 +50,7 @@ function Landing() {
       <LogoMarquee />
       <Features />
       <ShowcaseParallax />
-      <HowItWorks />
+      <HowItWorksTeaser />
       <Testimonials />
       <FinalCTA />
       <SiteFooter />
@@ -61,105 +58,7 @@ function Landing() {
   );
 }
 
-/* ───────────────────── Header ───────────────────── */
-function SiteHeader() {
-  const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const f = () => setScrolled(window.scrollY > 12);
-    f();
-    window.addEventListener("scroll", f, { passive: true });
-    return () => window.removeEventListener("scroll", f);
-  }, []);
-  const nav = [
-    { label: "Features", href: "#features" },
-    { label: "How it works", href: "#how" },
-    { label: "Reviews", href: "#reviews" },
-    { label: "FAQ", href: "#faq" },
-  ];
-  return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all ${
-        scrolled ? "backdrop-blur-xl bg-background/60 border-b border-white/10" : ""
-      }`}
-    >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center">
-          <Logo />
-        </Link>
-        <nav className="hidden items-center gap-8 md:flex">
-          {nav.map((n) => (
-            <a
-              key={n.href}
-              href={n.href}
-              className="text-sm font-medium text-white/70 transition-colors hover:text-white"
-            >
-              {n.label}
-            </a>
-          ))}
-        </nav>
-        <div className="hidden items-center gap-2 md:flex">
-          <Link
-            to="/auth"
-            className="rounded-xl px-4 py-2 text-sm font-semibold text-white/80 hover:text-white"
-          >
-            Log in
-          </Link>
-          <Link
-            to="/auth"
-            search={{ mode: "signup" }}
-            className="rounded-xl bg-gradient-primary px-4 py-2 text-sm font-semibold text-white glow-purple transition-transform hover:scale-[1.03]"
-          >
-            Get started
-          </Link>
-        </div>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="grid h-10 w-10 place-items-center rounded-xl glass md:hidden"
-          aria-label="Menu"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-      </div>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mx-3 mb-3 rounded-2xl glass-strong p-4 md:hidden"
-        >
-          <div className="flex flex-col gap-2">
-            {nav.map((n) => (
-              <a
-                key={n.href}
-                href={n.href}
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-white/10"
-              >
-                {n.label}
-              </a>
-            ))}
-            <div className="my-1 h-px bg-white/10" />
-            <Link
-              to="/auth"
-              className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-white/10"
-              onClick={() => setOpen(false)}
-            >
-              Log in
-            </Link>
-            <Link
-              to="/auth"
-              search={{ mode: "signup" }}
-              onClick={() => setOpen(false)}
-              className="mt-1 rounded-xl bg-gradient-primary px-4 py-2.5 text-center text-sm font-semibold text-white glow-purple"
-            >
-              Get started
-            </Link>
-          </div>
-        </motion.div>
-      )}
-    </header>
-  );
-}
+
 
 /* ───────────────────── Hero with 3D parallax ───────────────────── */
 function Hero() {
@@ -472,22 +371,26 @@ function ShowcaseParallax() {
             ))}
           </ul>
         </motion.div>
-        <motion.div style={{ y: y2, rotate: rot }} className="relative">
-          <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-accent opacity-25 blur-3xl" />
-          <img
-            src={students}
-            alt="Nigerian students using StudentFinance+"
-            loading="lazy"
-            className="w-full rounded-[2rem] border border-white/10 object-cover shadow-2xl"
-          />
+        <motion.div style={{ y: y2, rotate: rot }}>
+          <TiltCard className="rounded-[2rem]" max={12}>
+            <div className="relative">
+              <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-accent opacity-25 blur-3xl" />
+              <img
+                src={students}
+                alt="Nigerian students using StudentFinance+"
+                loading="lazy"
+                className="w-full rounded-[2rem] border border-white/10 object-cover shadow-2xl"
+              />
+            </div>
+          </TiltCard>
         </motion.div>
       </div>
     </section>
   );
 }
 
-/* ───────────────────── How It Works ───────────────────── */
-function HowItWorks() {
+/* ───────────────────── How It Works (teaser) ───────────────────── */
+function HowItWorksTeaser() {
   const steps = [
     { n: "01", t: "Sign up free", d: "Enter your monthly allowance. Takes 30 seconds." },
     { n: "02", t: "Set your split", d: "We suggest 60/20/20. Tweak to match your reality." },
@@ -521,6 +424,14 @@ function HowItWorks() {
             </div>
           </motion.div>
         ))}
+      </div>
+      <div className="mt-10 text-center">
+        <Link
+          to="/how-it-works"
+          className="inline-flex items-center gap-2 rounded-2xl glass px-5 py-3 text-sm font-semibold hover:bg-white/10"
+        >
+          See the full walkthrough <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
     </section>
   );
@@ -582,27 +493,13 @@ function Testimonials() {
         ))}
       </div>
 
-      {/* FAQ */}
-      <div id="faq" className="mx-auto mt-20 max-w-3xl">
-        <h3 className="text-center text-2xl font-bold sm:text-3xl">Quick questions</h3>
-        <div className="mt-8 space-y-3">
-          {[
-            ["Is it really free?", "Yes — completely free for students. We may add optional premium features later."],
-            ["Do I have to link my bank?", "Nope. StudentFinance+ is cash-first. You can use it without any bank account."],
-            ["Does it work offline?", "Yes. Add expenses without internet; they sync when you reconnect."],
-            ["Is my data safe?", "Your data is encrypted and only visible to you. We never sell it."],
-          ].map(([q, a]) => (
-            <details key={q} className="group glass rounded-2xl px-5 py-4">
-              <summary className="cursor-pointer list-none text-sm font-semibold">
-                <div className="flex items-center justify-between">
-                  {q}
-                  <span className="text-white/50 transition-transform group-open:rotate-45">+</span>
-                </div>
-              </summary>
-              <p className="mt-2 text-sm text-white/70">{a}</p>
-            </details>
-          ))}
-        </div>
+      <div className="mt-16 text-center">
+        <Link
+          to="/faq"
+          className="inline-flex items-center gap-2 rounded-2xl glass px-5 py-3 text-sm font-semibold hover:bg-white/10"
+        >
+          Read the FAQ <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
     </section>
   );
@@ -648,79 +545,4 @@ function FinalCTA() {
   );
 }
 
-/* ───────────────────── Footer ───────────────────── */
-function SiteFooter() {
-  const cols = [
-    {
-      h: "Product",
-      l: [
-        ["Features", "#features"],
-        ["How it works", "#how"],
-        ["Reviews", "#reviews"],
-        ["FAQ", "#faq"],
-      ],
-    },
-    {
-      h: "Company",
-      l: [
-        ["About", "#"],
-        ["Blog", "#"],
-        ["Careers", "#"],
-        ["Press", "#"],
-      ],
-    },
-    {
-      h: "Legal",
-      l: [
-        ["Privacy", "#"],
-        ["Terms", "#"],
-        ["Security", "#"],
-        ["Contact", "#"],
-      ],
-    },
-  ];
-  return (
-    <footer className="border-t border-white/10 bg-black/30 backdrop-blur">
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-5">
-          <div className="lg:col-span-2">
-            <Logo size="lg" />
-            <p className="mt-4 max-w-sm text-sm text-white/60">
-              Smart budgets, cash-first tracking, and savings goals for Nigerian university students.
-            </p>
-            <div className="mt-5 flex gap-3">
-              {[Twitter, Instagram, Github].map((I, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="grid h-10 w-10 place-items-center rounded-xl glass hover:bg-white/10"
-                  aria-label="social"
-                >
-                  <I className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
-          </div>
-          {cols.map((c) => (
-            <div key={c.h}>
-              <div className="text-xs font-bold uppercase tracking-wider text-white/50">{c.h}</div>
-              <ul className="mt-3 space-y-2 text-sm">
-                {c.l.map(([t, h]) => (
-                  <li key={t}>
-                    <a href={h} className="text-white/75 hover:text-white">
-                      {t}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/50 sm:flex-row">
-          <p>© {new Date().getFullYear()} StudentFinance+. Built with 💜 in Naija.</p>
-          <p>Made for Nigerian students. By students.</p>
-        </div>
-      </div>
-    </footer>
-  );
-}
+

@@ -54,11 +54,19 @@ function Home() {
 
   return (
     <AppShell>
-      <div className="mt-2">
-        <motion.h1 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold">
-          Welcome back, <span className="text-gradient">{name}</span> 👋
-        </motion.h1>
-        <p className="text-sm text-white/60">{new Date().toLocaleDateString("en-NG", { weekday: "long", month: "long", day: "numeric" })}</p>
+      <div className="mt-2 lg:flex lg:items-end lg:justify-between">
+        <div>
+          <motion.h1 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold lg:text-4xl">
+            Welcome back, <span className="text-gradient">{name}</span> 👋
+          </motion.h1>
+          <p className="text-sm text-white/60 lg:text-base">{new Date().toLocaleDateString("en-NG", { weekday: "long", month: "long", day: "numeric" })}</p>
+        </div>
+        <button
+          onClick={() => setOpenSheet(true)}
+          className="mt-4 hidden items-center gap-2 self-end rounded-2xl bg-gradient-primary px-5 py-3 text-sm font-semibold text-white glow-purple transition-transform hover:scale-[1.03] lg:inline-flex"
+        >
+          <Plus className="h-4 w-4" /> Add expense
+        </button>
       </div>
 
       {alertCount > 0 && (
@@ -76,94 +84,107 @@ function Home() {
         </Link>
       )}
 
-      {/* Total budget ring */}
-      <GlassCard strong className="mt-4">
-        <div className="flex items-center gap-5">
-          <Ring percent={ringPct} />
-          <div className="flex-1">
-            <div className="text-xs uppercase text-white/60">This month</div>
-            <div className="text-2xl font-black">{formatNaira(totalSpent)}</div>
-            <div className="text-xs text-white/60">of {formatNaira(allowance)} spent</div>
-            <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-neon-green/15 px-2 py-0.5 text-xs font-semibold text-neon-green">
-              {formatNaira(remaining)} left
+      {/* Two-column layout on desktop */}
+      <div className="mt-4 grid gap-5 lg:grid-cols-3">
+        {/* Left / main column */}
+        <div className="space-y-5 lg:col-span-2">
+          {/* Total budget ring */}
+          <GlassCard strong>
+            <div className="flex items-center gap-5">
+              <Ring percent={ringPct} />
+              <div className="flex-1">
+                <div className="text-xs uppercase text-white/60">This month</div>
+                <div className="text-2xl font-black lg:text-4xl">{formatNaira(totalSpent)}</div>
+                <div className="text-xs text-white/60 lg:text-sm">of {formatNaira(allowance)} spent</div>
+                <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-neon-green/15 px-2 py-0.5 text-xs font-semibold text-neon-green">
+                  {formatNaira(remaining)} left
+                </div>
+              </div>
+            </div>
+          </GlassCard>
+
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-white/60">Top categories</h2>
+              <Link to="/budget" className="text-xs text-neon-cyan">View all →</Link>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {cats.slice(0, 6).map((c, i) => {
+                const p = pct(Number(c.spent), Number(c.allocated));
+                const s = statusFromPct(p);
+                return (
+                  <motion.div key={c.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }} className="glass rounded-2xl p-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{c.icon}</span>
+                        <span className="font-medium">{c.name}</span>
+                      </div>
+                      <div className="text-xs text-white/70">{formatNaira(c.spent)} / {formatNaira(c.allocated)}</div>
+                    </div>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                      <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, p)}%` }} transition={{ duration: 0.6 }} className="h-full" style={{ backgroundColor: s.color }} />
+                    </div>
+                    <div className="mt-1 text-[11px] font-semibold" style={{ color: s.color }}>{p}% used</div>
+                  </motion.div>
+                );
+              })}
+              {cats.length === 0 && (
+                <div className="glass rounded-2xl p-6 text-center text-sm text-white/60 sm:col-span-2">No categories yet.</div>
+              )}
             </div>
           </div>
         </div>
-      </GlassCard>
 
-      {activeGoal && (
-        <Link to="/savings">
-          <GlassCard className="mt-4">
-            <div className="flex items-center justify-between text-sm">
-              <div className="font-semibold">🎯 {activeGoal.name}</div>
-              <div className="text-white/70">{formatNaira(activeGoal.current_amount)} / {formatNaira(activeGoal.target_amount)}</div>
-            </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
-              <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, pct(Number(activeGoal.current_amount), Number(activeGoal.target_amount)))}%` }}
-                transition={{ duration: 0.8 }} className="h-full bg-gradient-accent" />
-            </div>
-          </GlassCard>
-        </Link>
-      )}
-
-      <div className="mt-5 mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-white/60">Top categories</h2>
-        <Link to="/budget" className="text-xs text-neon-cyan">View all →</Link>
-      </div>
-      <div className="space-y-2">
-        {cats.slice(0, 5).map((c, i) => {
-          const p = pct(Number(c.spent), Number(c.allocated));
-          const s = statusFromPct(p);
-          return (
-            <motion.div key={c.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }} className="glass rounded-2xl p-3">
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{c.icon}</span>
-                  <span className="font-medium">{c.name}</span>
+        {/* Right column */}
+        <div className="space-y-5">
+          {activeGoal && (
+            <Link to="/savings">
+              <GlassCard>
+                <div className="flex items-center justify-between text-sm">
+                  <div className="font-semibold">🎯 {activeGoal.name}</div>
+                  <div className="text-white/70">{formatNaira(activeGoal.current_amount)} / {formatNaira(activeGoal.target_amount)}</div>
                 </div>
-                <div className="text-xs text-white/70">{formatNaira(c.spent)} / {formatNaira(c.allocated)}</div>
-              </div>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, p)}%` }} transition={{ duration: 0.6 }} className="h-full" style={{ backgroundColor: s.color }} />
-              </div>
-              <div className="mt-1 text-[11px] font-semibold" style={{ color: s.color }}>{p}% used</div>
-            </motion.div>
-          );
-        })}
-        {cats.length === 0 && (
-          <div className="glass rounded-2xl p-6 text-center text-sm text-white/60">No categories yet.</div>
-        )}
-      </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, pct(Number(activeGoal.current_amount), Number(activeGoal.target_amount)))}%` }}
+                    transition={{ duration: 0.8 }} className="h-full bg-gradient-accent" />
+                </div>
+              </GlassCard>
+            </Link>
+          )}
 
-      <div className="mt-5 mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-white/60">Recent expenses</h2>
-        <Link to="/expenses" className="text-xs text-neon-cyan">All →</Link>
-      </div>
-      <div className="space-y-2">
-        {recent.map((e) => (
-          <div key={e.id} className="glass flex items-center justify-between rounded-2xl p-3">
-            <div className="flex items-center gap-3">
-              <div className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 text-lg">{e.categories?.icon ?? "💸"}</div>
-              <div>
-                <div className="text-sm font-medium">{e.merchant || e.categories?.name || "Expense"}</div>
-                <div className="text-[11px] text-white/55">{new Date(e.date).toLocaleDateString("en-NG", { month: "short", day: "numeric" })} · {e.categories?.name}</div>
-              </div>
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-white/60">Recent expenses</h2>
+              <Link to="/expenses" className="text-xs text-neon-cyan">All →</Link>
             </div>
-            <div className="text-sm font-bold">{formatNaira(e.amount)}</div>
+            <div className="space-y-2">
+              {recent.map((e) => (
+                <div key={e.id} className="glass flex items-center justify-between rounded-2xl p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 text-lg">{e.categories?.icon ?? "💸"}</div>
+                    <div>
+                      <div className="text-sm font-medium">{e.merchant || e.categories?.name || "Expense"}</div>
+                      <div className="text-[11px] text-white/55">{new Date(e.date).toLocaleDateString("en-NG", { month: "short", day: "numeric" })} · {e.categories?.name}</div>
+                    </div>
+                  </div>
+                  <div className="text-sm font-bold">{formatNaira(e.amount)}</div>
+                </div>
+              ))}
+              {recent.length === 0 && (
+                <div className="glass rounded-2xl p-6 text-center text-sm text-white/60">
+                  No expenses yet. Tap <Sparkles className="inline h-3 w-3 text-neon-amber" /> the + button to log your first ✨
+                </div>
+              )}
+            </div>
           </div>
-        ))}
-        {recent.length === 0 && (
-          <div className="glass rounded-2xl p-6 text-center text-sm text-white/60">
-            No expenses yet. Tap <Sparkles className="inline h-3 w-3 text-neon-amber" /> the + button to log your first ✨
-          </div>
-        )}
+        </div>
       </div>
 
-      {/* FAB */}
+      {/* Mobile FAB */}
       <motion.button
         whileTap={{ scale: 0.92 }}
         onClick={() => setOpenSheet(true)}
-        className="fixed bottom-24 right-5 z-30 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-primary text-white glow-purple"
+        className="fixed bottom-24 right-5 z-30 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-primary text-white glow-purple lg:hidden"
         aria-label="Add expense"
       >
         <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 2.4 }}>
