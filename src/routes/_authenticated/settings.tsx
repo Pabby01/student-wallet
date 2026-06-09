@@ -4,7 +4,8 @@ import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { LogOut, Download, RotateCw } from "lucide-react";
+import { LogOut, Download, RotateCw, PlayCircle } from "lucide-react";
+import { Walkthrough } from "@/components/Walkthrough";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: Settings,
@@ -19,6 +20,7 @@ function Settings() {
   const [year, setYear] = useState<number | "">("");
   const [allowance, setAllowance] = useState<number | "">("");
   const [saving, setSaving] = useState(false);
+  const [replayTour, setReplayTour] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -93,12 +95,18 @@ function Settings() {
           <span>→</span>
         </button>
 
+        <button onClick={() => { localStorage.removeItem("sf_walkthrough_done_v1"); setReplayTour(true); }} className="glass flex w-full items-center justify-between rounded-2xl p-4 text-sm hover:bg-white/10">
+          <span className="flex items-center gap-2"><PlayCircle className="h-4 w-4" /> Replay welcome tour</span>
+          <span>→</span>
+        </button>
+
         <button onClick={async () => { await signOut(); navigate({ to: "/auth" }); }}
           className="glass flex w-full items-center justify-between rounded-2xl border border-neon-red/40 p-4 text-sm text-neon-red hover:bg-neon-red/10">
           <span className="flex items-center gap-2"><LogOut className="h-4 w-4" /> Sign out</span>
           <span>→</span>
         </button>
       </div>
+      {replayTour && <Walkthrough force onDone={() => setReplayTour(false)} />}
     </AppShell>
   );
 }
