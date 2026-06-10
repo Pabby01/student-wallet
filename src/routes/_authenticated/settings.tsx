@@ -99,6 +99,8 @@ function Settings() {
           <span className="flex items-center gap-2"><PlayCircle className="h-4 w-4" /> Replay welcome tour</span>
           <span>→</span>
         </button>
+        <ChangePasswordCard />
+
 
         <button onClick={async () => { await signOut(); navigate({ to: "/auth" }); }}
           className="glass flex w-full items-center justify-between rounded-2xl border border-neon-red/40 p-4 text-sm text-neon-red hover:bg-neon-red/10">
