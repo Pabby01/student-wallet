@@ -13,16 +13,20 @@ Return ONLY valid JSON matching this schema (no markdown, no commentary):
 If the image is not a receipt, return all nulls.`;
 
 export const scanReceipt = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       imageDataUrl: z.string().min(20), // data:image/...;base64,XXXX
     }),
   )
   .handler(async ({ data }) => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("Missing LOVABLE_API_KEY");
+    const apiKey = process.env.RECEIPT_AI_API_KEY;
+    const apiUrl = process.env.RECEIPT_AI_API_URL;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    if (!apiKey || !apiUrl) {
+      throw new Error("Missing receipt scanning environment variables.");
+    }
+
+    const res = await fetch(apiUrl, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -47,7 +51,7 @@ export const scanReceipt = createServerFn({ method: "POST" })
     if (!res.ok) {
       const txt = await res.text();
       if (res.status === 429) throw new Error("Rate limited. Please wait a moment and try again.");
-      if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace.");
+      if (res.status === 402) throw new Error("Receipt scanning credits are unavailable. Try again later.");
       throw new Error(`Scan failed (${res.status}): ${txt.slice(0, 200)}`);
     }
 
