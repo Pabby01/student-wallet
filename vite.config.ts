@@ -15,4 +15,18 @@ export default defineConfig({
     tailwindcss(),
     react(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("node_modules/recharts")) return "vendor-charts";
+          if (id.includes("node_modules/framer-motion")) return "vendor-motion";
+          if (id.includes("node_modules/@supabase/")) return "vendor-supabase";
+          if (id.includes("node_modules/@radix-ui/")) return "vendor-radix";
+          if (id.includes("node_modules/@tanstack/")) return "vendor-tanstack";
+        },
+      },
+    },
+  },
 });
