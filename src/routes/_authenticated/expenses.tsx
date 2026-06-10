@@ -38,8 +38,17 @@ function Expenses() {
       const { data: cat } = await supabase.from("categories").select("spent").eq("id", e.category_id).maybeSingle();
       if (cat) await supabase.from("categories").update({ spent: Math.max(0, Number(cat.spent) - Number(e.amount)) }).eq("id", e.category_id);
     }
+    if (e.receipt_url) {
+      await supabase.storage.from("receipts").remove([e.receipt_url]);
+    }
     toast.success("Deleted");
     setTick((t) => t + 1);
+  }
+
+  async function openReceipt(path: string) {
+    const { data, error } = await supabase.storage.from("receipts").createSignedUrl(path, 60);
+    if (error || !data?.signedUrl) return toast.error("Could not load receipt");
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   }
 
   const grouped = list.reduce<Record<string, Exp[]>>((acc, e) => {
