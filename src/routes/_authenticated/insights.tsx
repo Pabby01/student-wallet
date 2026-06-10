@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
@@ -6,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatNaira } from "@/lib/format";
 import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/insights")({
   component: Insights,
@@ -22,7 +24,13 @@ function Insights() {
     const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
     supabase.from("expenses").select("amount, date, category_id, categories(name, color)")
       .eq("user_id", user.id).gte("date", monthStart.toISOString().slice(0, 10))
-      .then(({ data }) => setExps((data ?? []) as unknown as Exp[]));
+      .then(({ data, error }) => {
+        if (error) {
+          toast.error("Failed to load insights. Check your connection and try again.");
+          return;
+        }
+        setExps((data ?? []) as unknown as Exp[]);
+      });
   }, [user]);
 
   const daily = useMemo(() => {

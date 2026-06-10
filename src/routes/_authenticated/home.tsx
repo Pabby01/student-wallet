@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -9,6 +10,7 @@ import { formatNaira, pct, statusFromPct } from "@/lib/format";
 import { AddExpenseSheet } from "@/components/AddExpenseSheet";
 import { Walkthrough } from "@/components/Walkthrough";
 import { Plus, Sparkles, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/home")({
   component: Home,
@@ -31,19 +33,23 @@ function Home() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: profile }, { data: c }, { data: e }, { data: a }, { data: g }] = await Promise.all([
-        supabase.from("profiles").select("full_name, monthly_allowance").eq("id", user.id).maybeSingle(),
-        supabase.from("categories").select("id, name, icon, color, allocated, spent").eq("user_id", user.id).order("allocated", { ascending: false }),
-        supabase.from("expenses").select("id, amount, merchant, date, categories(name, icon, color)").eq("user_id", user.id).order("date", { ascending: false }).order("created_at", { ascending: false }).limit(5),
-        supabase.from("alerts").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("was_read", false),
-        supabase.from("savings_goals").select("name, current_amount, target_amount").eq("user_id", user.id).eq("status", "active").order("created_at", { ascending: false }).limit(1),
-      ]);
-      setName(profile?.full_name?.split(" ")[0] ?? "friend");
-      setAllowance(Number(profile?.monthly_allowance ?? 0));
-      setCats((c ?? []) as Cat[]);
-      setRecent((e ?? []) as unknown as Exp[]);
-      setAlertCount(a as unknown as number ?? 0);
-      setActiveGoal(g?.[0] ?? null);
+      try {
+        const [{ data: profile }, { data: c }, { data: e }, { data: a }, { data: g }] = await Promise.all([
+          supabase.from("profiles").select("full_name, monthly_allowance").eq("id", user.id).maybeSingle(),
+          supabase.from("categories").select("id, name, icon, color, allocated, spent").eq("user_id", user.id).order("allocated", { ascending: false }),
+          supabase.from("expenses").select("id, amount, merchant, date, categories(name, icon, color)").eq("user_id", user.id).order("date", { ascending: false }).order("created_at", { ascending: false }).limit(5),
+          supabase.from("alerts").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("was_read", false),
+          supabase.from("savings_goals").select("name, current_amount, target_amount").eq("user_id", user.id).eq("status", "active").order("created_at", { ascending: false }).limit(1),
+        ]);
+        setName(profile?.full_name?.split(" ")[0] ?? "friend");
+        setAllowance(Number(profile?.monthly_allowance ?? 0));
+        setCats((c ?? []) as Cat[]);
+        setRecent((e ?? []) as unknown as Exp[]);
+        setAlertCount(a as unknown as number ?? 0);
+        setActiveGoal(g?.[0] ?? null);
+      } catch {
+        toast.error("Failed to load dashboard. Check your connection and try again.");
+      }
     })();
   }, [user, tick]);
 
