@@ -82,6 +82,11 @@ function Expenses() {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-sm font-bold">{formatNaira(e.amount)}</div>
+                      {e.receipt_url && (
+                        <button onClick={() => openReceipt(e.receipt_url!)} className="grid h-8 w-8 place-items-center rounded-lg text-neon-cyan/80 hover:bg-white/10" aria-label="View receipt">
+                          <ImageIcon className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                       <button onClick={() => del(e)} className="grid h-8 w-8 place-items-center rounded-lg text-white/40 hover:bg-white/10 hover:text-neon-red">
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
