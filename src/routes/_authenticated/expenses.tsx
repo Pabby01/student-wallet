@@ -24,7 +24,7 @@ function Expenses() {
   useEffect(() => {
     if (!user) return;
     supabase.from("expenses")
-      .select("id, amount, merchant, description, date, category_id, categories(name, icon, color)")
+      .select("id, amount, merchant, description, date, category_id, receipt_url, categories(name, icon, color)")
       .eq("user_id", user.id).order("date", { ascending: false }).order("created_at", { ascending: false }).limit(100)
       .then(({ data }) => setList((data ?? []) as unknown as Exp[]));
   }, [user, tick]);
