@@ -193,15 +193,6 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
     }
   }
 
-  function mockScan() {
-    setScanned(true);
-    setAmount("8500");
-    setMerchant("University Bookstore");
-    setDescription("Scanned receipt (demo)");
-    const academic = cats.find((c) => c.name.toLowerCase().includes("academic"));
-    if (academic) setCategoryId(academic.id);
-    toast.success("Receipt scanned: ₦8,500 at University Bookstore");
-  }
 
   return (
     <AnimatePresence>
