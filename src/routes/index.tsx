@@ -176,13 +176,15 @@ function Hero() {
             className="relative"
           >
             <div className="absolute -inset-10 -z-10 rounded-[3rem] bg-gradient-primary opacity-30 blur-3xl" />
-            <img
-              src={heroPhone}
-              alt="StudentFinance+ app on a phone"
-              width={1024}
-              height={1024}
-              className="mx-auto w-full max-w-[520px] rounded-[2rem] shadow-[0_40px_120px_-20px_rgba(139,92,246,0.55)]"
-            />
+            <TiltCard className="rounded-[2rem]" max={10}>
+              <img
+                src={heroPhone}
+                alt="StudentFinance+ app on a phone"
+                width={1024}
+                height={1024}
+                className="mx-auto w-full max-w-[520px] rounded-[2rem] shadow-[0_40px_120px_-20px_rgba(139,92,246,0.55)]"
+              />
+            </TiltCard>
             {/* Floating chips */}
             <FloatingChip
               className="left-0 top-10"
