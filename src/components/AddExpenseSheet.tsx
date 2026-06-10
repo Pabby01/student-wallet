@@ -69,6 +69,52 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
     setAmount(""); setMerchant(""); setDescription(""); setScanned(false);
     setDate(new Date().toISOString().slice(0, 10));
     setShowNewCat(false); setNewCatName(""); setNewCatIcon("💸");
+    setReceiptUrl(null); setReceiptPreview(null);
+  }
+
+  async function fileToDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = () => reject(r.error);
+      r.readAsDataURL(file);
+    });
+  }
+
+  async function handleReceiptFile(file: File) {
+    if (!user) return;
+    if (file.size > 8 * 1024 * 1024) { toast.error("Image is larger than 8 MB"); return; }
+    if (!file.type.startsWith("image/")) { toast.error("Pick an image file"); return; }
+    setScanning(true);
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setReceiptPreview(dataUrl);
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("receipts").upload(path, file, {
+        contentType: file.type, upsert: false,
+      });
+      if (upErr) throw upErr;
+      setReceiptUrl(path);
+      const result = await scanFn({ data: { imageDataUrl: dataUrl } });
+      let filled = 0;
+      if (result.amount != null) { setAmount(String(result.amount)); filled++; }
+      if (result.merchant) { setMerchant(result.merchant); filled++; }
+      if (result.date) { setDate(result.date); filled++; }
+      if (result.description) { setDescription(result.description); filled++; }
+      if (result.categoryHint) {
+        const hint = result.categoryHint.toLowerCase();
+        const match = cats.find((c) => c.name.toLowerCase().includes(hint) || hint.includes(c.name.toLowerCase()));
+        if (match) setCategoryId(match.id);
+      }
+      setScanned(true);
+      if (filled === 0) toast.warning("Couldn't read the receipt — please fill in manually");
+      else toast.success(`Scanned ✨ ${filled} field${filled === 1 ? "" : "s"} filled — please review`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Scan failed");
+    } finally {
+      setScanning(false);
+    }
   }
 
   async function createCategory() {
