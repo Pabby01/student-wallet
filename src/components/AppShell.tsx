@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { BackgroundFX } from "./BackgroundFX";
 import { BottomNav } from "./BottomNav";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, Settings, Home, Receipt, Wallet, Target, BarChart3, LogOut } from "lucide-react";
+import { Bell, Settings, Home, Receipt, Wallet, Target, BarChart3, LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -16,19 +17,69 @@ const sideItems = [
   { to: "/insights", label: "Insights", Icon: BarChart3 },
 ] as const;
 
+const STORAGE_KEY = "sf_sidebar_collapsed_v1";
+
 export function AppShell({ children, hideNav }: { children: ReactNode; hideNav?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { signOut } = useAuth();
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem(STORAGE_KEY);
+      if (v === "1") setCollapsed(true);
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, collapsed ? "1" : "0");
+    } catch {}
+  }, [collapsed]);
+
+  const sideW = collapsed ? "lg:w-20" : "lg:w-64";
+  const mainPad = collapsed ? "lg:pl-20" : "lg:pl-64";
 
   return (
-    <div className="relative min-h-screen text-foreground">
+    <div className="relative min-h-screen overflow-x-clip text-foreground">
       <BackgroundFX />
 
       {/* ───── Desktop sidebar ───── */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-background/40 px-4 py-6 backdrop-blur-xl lg:flex">
-        <Link to="/home" className="mb-8 px-2">
-          <Logo />
-        </Link>
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-white/10 bg-background/50 px-3 py-5 backdrop-blur-xl transition-[width] duration-300 lg:flex",
+          sideW,
+        )}
+      >
+        <div className="mb-6 flex items-center justify-between px-1">
+          <Link to="/home" className={cn("flex items-center", collapsed && "mx-auto")}>
+            {collapsed ? (
+              <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-primary text-sm font-black text-white glow-purple">
+                ₦
+              </div>
+            ) : (
+              <Logo />
+            )}
+          </Link>
+          {!collapsed && (
+            <button
+              onClick={() => setCollapsed(true)}
+              className="grid h-8 w-8 place-items-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white"
+              aria-label="Collapse sidebar"
+            >
+              <PanelLeftClose className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        {collapsed && (
+          <button
+            onClick={() => setCollapsed(false)}
+            className="mb-3 grid h-9 w-full place-items-center rounded-xl text-white/60 hover:bg-white/10 hover:text-white"
+            aria-label="Expand sidebar"
+          >
+            <PanelLeftOpen className="h-4 w-4" />
+          </button>
+        )}
+
         <nav className="flex flex-1 flex-col gap-1">
           {sideItems.map(({ to, label, Icon }) => {
             const active = pathname === to || pathname.startsWith(to + "/");
@@ -36,8 +87,10 @@ export function AppShell({ children, hideNav }: { children: ReactNode; hideNav?:
               <Link
                 key={to}
                 to={to}
+                title={collapsed ? label : undefined}
                 className={cn(
                   "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                  collapsed && "justify-center px-0",
                   active ? "text-white" : "text-white/70 hover:bg-white/5 hover:text-white",
                 )}
               >
@@ -48,8 +101,8 @@ export function AppShell({ children, hideNav }: { children: ReactNode; hideNav?:
                     transition={{ type: "spring", stiffness: 400, damping: 32 }}
                   />
                 )}
-                <Icon className="relative z-10 h-5 w-5" />
-                <span className="relative z-10">{label}</span>
+                <Icon className="relative z-10 h-5 w-5 shrink-0" />
+                {!collapsed && <span className="relative z-10">{label}</span>}
               </Link>
             );
           })}
@@ -57,21 +110,33 @@ export function AppShell({ children, hideNav }: { children: ReactNode; hideNav?:
         <div className="mt-4 space-y-1 border-t border-white/10 pt-4">
           <Link
             to="/alerts"
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white"
+            title={collapsed ? "Alerts" : undefined}
+            className={cn(
+              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white",
+              collapsed && "justify-center px-0",
+            )}
           >
-            <Bell className="h-5 w-5" /> Alerts
+            <Bell className="h-5 w-5 shrink-0" /> {!collapsed && "Alerts"}
           </Link>
           <Link
             to="/settings"
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white"
+            title={collapsed ? "Settings" : undefined}
+            className={cn(
+              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white",
+              collapsed && "justify-center px-0",
+            )}
           >
-            <Settings className="h-5 w-5" /> Settings
+            <Settings className="h-5 w-5 shrink-0" /> {!collapsed && "Settings"}
           </Link>
           <button
             onClick={signOut}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white"
+            title={collapsed ? "Sign out" : undefined}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/5 hover:text-white",
+              collapsed && "justify-center px-0",
+            )}
           >
-            <LogOut className="h-5 w-5" /> Sign out
+            <LogOut className="h-5 w-5 shrink-0" /> {!collapsed && "Sign out"}
           </button>
         </div>
       </aside>
@@ -99,7 +164,12 @@ export function AppShell({ children, hideNav }: { children: ReactNode; hideNav?:
       </header>
 
       {/* ───── Main content ───── */}
-      <main className="mx-auto w-full max-w-md px-4 pt-4 pb-28 lg:ml-64 lg:max-w-none lg:px-8 lg:pt-10 lg:pb-12 xl:px-12">
+      <main
+        className={cn(
+          "mx-auto w-full max-w-md px-4 pt-4 pb-28 transition-[padding] duration-300 lg:max-w-none lg:px-8 lg:pt-10 lg:pb-12 xl:px-12",
+          mainPad,
+        )}
+      >
         <div className="lg:mx-auto lg:max-w-6xl">
           <AnimatePresence mode="wait">
             <motion.div

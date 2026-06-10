@@ -5,9 +5,11 @@ import { useAuth } from "@/hooks/use-auth";
 import { DEFAULT_CATEGORIES } from "@/lib/categories";
 import { formatNaira } from "@/lib/format";
 import { toast } from "sonner";
-import { Loader2, ScanLine, X } from "lucide-react";
+import { Loader2, ScanLine, X, Plus, Check } from "lucide-react";
 
 type Category = { id: string; name: string; icon: string | null; color: string | null; allocated: number; spent: number };
+
+const EMOJIS = ["💸", "🍲", "🚌", "📚", "📱", "🎮", "🍔", "🛍️", "💰", "🏠", "🎬", "✈️", "⚡", "🎁"];
 
 export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onClose: () => void; onSaved?: () => void }) {
   const { user } = useAuth();
@@ -19,19 +21,71 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [scanned, setScanned] = useState(false);
+  const [showNewCat, setShowNewCat] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const [newCatIcon, setNewCatIcon] = useState("💸");
+  const [creatingCat, setCreatingCat] = useState(false);
+
+  async function loadCats() {
+    if (!user) return;
+    const { data } = await supabase
+      .from("categories")
+      .select("id, name, icon, color, allocated, spent")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: true });
+    let list = (data ?? []) as Category[];
+    // Auto-seed defaults if empty so the user never gets stuck.
+    if (list.length === 0) {
+      const rows = DEFAULT_CATEGORIES.map((d) => ({
+        user_id: user.id,
+        name: d.name,
+        icon: d.icon,
+        color: d.color,
+        bucket: d.bucket,
+        allocated: 0,
+        spent: 0,
+      }));
+      const { data: inserted } = await supabase.from("categories").insert(rows).select("id, name, icon, color, allocated, spent");
+      list = (inserted ?? []) as Category[];
+    }
+    setCats(list);
+    setCategoryId((prev) => prev ?? list[0]?.id ?? null);
+  }
 
   useEffect(() => {
     if (!open || !user) return;
-    supabase.from("categories").select("id, name, icon, color, allocated, spent").eq("user_id", user.id).then(({ data }) => {
-      const list = (data ?? []) as Category[];
-      setCats(list);
-      if (!categoryId && list[0]) setCategoryId(list[0].id);
-    });
-  }, [open, user, categoryId]);
+    loadCats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, user]);
 
   function reset() {
     setAmount(""); setMerchant(""); setDescription(""); setScanned(false);
     setDate(new Date().toISOString().slice(0, 10));
+    setShowNewCat(false); setNewCatName(""); setNewCatIcon("💸");
+  }
+
+  async function createCategory() {
+    if (!user) return;
+    const name = newCatName.trim();
+    if (!name) { toast.error("Name your category"); return; }
+    setCreatingCat(true);
+    try {
+      const { data, error } = await supabase
+        .from("categories")
+        .insert({ user_id: user.id, name, icon: newCatIcon, color: "#8B5CF6", bucket: "wants", allocated: 0, spent: 0 })
+        .select("id, name, icon, color, allocated, spent")
+        .single();
+      if (error) throw error;
+      const next = [...cats, data as Category];
+      setCats(next);
+      setCategoryId((data as Category).id);
+      setShowNewCat(false); setNewCatName(""); setNewCatIcon("💸");
+      toast.success("Category added");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to create");
+    } finally {
+      setCreatingCat(false);
+    }
   }
 
   async function maybeAlert(catId: string) {
@@ -45,7 +99,6 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
     else if (p >= 90) { type = "budget_90"; msg = `⚠️ ${p}% of ${data.name} used — only ${formatNaira(Number(data.allocated) - Number(data.spent))} left.`; }
     else if (p >= 75) { type = "budget_75"; msg = `💡 Heads up — ${p}% of ${data.name} spent.`; }
     if (!type) return;
-    // Throttle: max 3 same-type alerts per category per day
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const { count } = await supabase
       .from("alerts")
@@ -71,7 +124,6 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
         description: description || null, was_scanned: scanned,
       });
       if (error) throw error;
-      // Bump category.spent
       const cat = cats.find((c) => c.id === categoryId);
       if (cat) {
         await supabase.from("categories").update({ spent: Number(cat.spent) + amt }).eq("id", categoryId);
@@ -89,7 +141,6 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
   }
 
   function mockScan() {
-    // Demo OCR — pretends to read a receipt.
     setScanned(true);
     setAmount("8500");
     setMerchant("University Bookstore");
@@ -103,73 +154,140 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
     <AnimatePresence>
       {open && (
         <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={onClose} className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" />
-          <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 280 }}
-            className="fixed inset-x-0 bottom-0 z-50 max-h-[92vh] overflow-y-auto rounded-t-3xl glass-strong p-5 pb-8">
-            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/30" />
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-lg font-bold">Log expense</h3>
-              <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-white/10">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <button onClick={mockScan} className="mb-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl glass border border-neon-cyan/40 py-2.5 text-sm font-semibold text-neon-cyan glow-cyan">
-              <ScanLine className="h-4 w-4" /> Scan receipt (demo)
-            </button>
-
-            <Field label="Amount (₦)">
-              <input inputMode="decimal" autoFocus value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ""))}
-                placeholder="0" className="input text-2xl font-bold" />
-            </Field>
-
-            <div className="mt-3">
-              <div className="mb-1 text-xs font-medium text-white/70">Category</div>
-              <div className="grid grid-cols-3 gap-2">
-                {cats.map((c) => {
-                  const active = c.id === categoryId;
-                  return (
-                    <button key={c.id} onClick={() => setCategoryId(c.id)}
-                      className={`rounded-2xl p-2.5 text-left transition-all ${active ? "bg-gradient-primary text-white glow-purple" : "glass hover:bg-white/10"}`}>
-                      <div className="text-lg">{c.icon || "💸"}</div>
-                      <div className="mt-0.5 truncate text-[11px] font-medium">{c.name}</div>
-                    </button>
-                  );
-                })}
-                {cats.length === 0 && (
-                  <div className="col-span-3 rounded-2xl glass p-4 text-center text-xs text-white/60">
-                    No categories yet — finish onboarding.
-                  </div>
-                )}
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+          />
+          {/* Wrapper centers on sm+, bottom-sheet on mobile */}
+          <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4 pointer-events-none">
+            <motion.div
+              initial={{ y: "100%", opacity: 0.5, scale: 0.98 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 30, stiffness: 280 }}
+              className="pointer-events-auto w-full max-h-[92vh] overflow-y-auto rounded-t-3xl glass-strong p-5 pb-8 sm:max-w-lg sm:rounded-3xl sm:p-6"
+            >
+              <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/30 sm:hidden" />
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-lg font-bold">Log expense</h3>
+                <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-white/10">
+                  <X className="h-4 w-4" />
+                </button>
               </div>
-            </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <Field label="Date">
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input" />
+              <button onClick={mockScan} className="mb-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl glass border border-neon-cyan/40 py-2.5 text-sm font-semibold text-neon-cyan glow-cyan">
+                <ScanLine className="h-4 w-4" /> Scan receipt (demo)
+              </button>
+
+              <Field label="Amount (₦)">
+                <input inputMode="decimal" autoFocus value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ""))}
+                  placeholder="0" className="ax-input text-2xl font-bold" />
               </Field>
-              <Field label="Merchant">
-                <input value={merchant} onChange={(e) => setMerchant(e.target.value)} placeholder="e.g. Cafeteria" className="input" />
+
+              <div className="mt-3">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="text-xs font-medium text-white/70">Category</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewCat((v) => !v)}
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-neon-cyan hover:bg-white/10"
+                  >
+                    <Plus className="h-3 w-3" /> New
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {cats.map((c) => {
+                    const active = c.id === categoryId;
+                    return (
+                      <button
+                        type="button"
+                        key={c.id}
+                        onClick={() => setCategoryId(c.id)}
+                        className={`rounded-2xl p-2.5 text-left transition-all ${active ? "bg-gradient-primary text-white glow-purple" : "glass hover:bg-white/10"}`}
+                      >
+                        <div className="text-lg">{c.icon || "💸"}</div>
+                        <div className="mt-0.5 truncate text-[11px] font-medium">{c.name}</div>
+                      </button>
+                    );
+                  })}
+                  {cats.length === 0 && (
+                    <div className="col-span-3 rounded-2xl glass p-4 text-center text-xs text-white/60 sm:col-span-4">
+                      Loading categories…
+                    </div>
+                  )}
+                </div>
+
+                <AnimatePresence>
+                  {showNewCat && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-3 overflow-hidden"
+                    >
+                      <div className="rounded-2xl glass p-3">
+                        <div className="flex gap-2">
+                          <input
+                            value={newCatName}
+                            onChange={(e) => setNewCatName(e.target.value)}
+                            placeholder="Category name"
+                            className="ax-input flex-1"
+                          />
+                          <button
+                            type="button"
+                            onClick={createCategory}
+                            disabled={creatingCat}
+                            className="inline-flex items-center gap-1 rounded-xl bg-gradient-primary px-3 py-2 text-xs font-semibold text-white glow-purple disabled:opacity-60"
+                          >
+                            {creatingCat ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />} Add
+                          </button>
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {EMOJIS.map((e) => (
+                            <button
+                              key={e}
+                              type="button"
+                              onClick={() => setNewCatIcon(e)}
+                              className={`grid h-8 w-8 place-items-center rounded-lg text-base transition-all ${
+                                newCatIcon === e ? "bg-gradient-primary glow-purple" : "bg-white/5 hover:bg-white/10"
+                              }`}
+                            >
+                              {e}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <Field label="Date">
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="ax-input" />
+                </Field>
+                <Field label="Merchant">
+                  <input value={merchant} onChange={(e) => setMerchant(e.target.value)} placeholder="e.g. Cafeteria" className="ax-input" />
+                </Field>
+              </div>
+
+              <Field label="Note (optional)">
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="ax-input" />
               </Field>
-            </div>
 
-            <Field label="Note (optional)">
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="input" />
-            </Field>
+              <button disabled={saving} onClick={save}
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 font-semibold text-white glow-purple active:scale-[0.98] disabled:opacity-60">
+                {saving && <Loader2 className="h-4 w-4 animate-spin" />} Save expense
+              </button>
 
-            <button disabled={saving} onClick={save}
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 font-semibold text-white glow-purple active:scale-[0.98] disabled:opacity-60">
-              {saving && <Loader2 className="h-4 w-4 animate-spin" />} Save expense
-            </button>
-
-            <style>{`
-              .input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: white; padding: 0.7rem 0.9rem; border-radius: 0.9rem; font-size: 0.9rem; outline: none; }
-              .input:focus { border-color: rgba(139,92,246,0.7); box-shadow: 0 0 0 3px rgba(139,92,246,0.25); }
-              .input::placeholder { color: rgba(255,255,255,0.45); }
-            `}</style>
-          </motion.div>
+              <style>{`
+                .ax-input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: white; padding: 0.7rem 0.9rem; border-radius: 0.9rem; font-size: 0.9rem; outline: none; }
+                .ax-input:focus { border-color: rgba(139,92,246,0.7); box-shadow: 0 0 0 3px rgba(139,92,246,0.25); }
+                .ax-input::placeholder { color: rgba(255,255,255,0.45); }
+              `}</style>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
@@ -185,5 +303,4 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-// Re-export default categories list for callers if they want it
 export { DEFAULT_CATEGORIES };
