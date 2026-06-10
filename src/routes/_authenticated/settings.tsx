@@ -4,7 +4,7 @@ import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { LogOut, Download, RotateCw, PlayCircle } from "lucide-react";
+import { LogOut, Download, RotateCw, PlayCircle, KeyRound, Eye, EyeOff } from "lucide-react";
 import { Walkthrough } from "@/components/Walkthrough";
 
 export const Route = createFileRoute("/_authenticated/settings")({
