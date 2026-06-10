@@ -23,6 +23,11 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [scanned, setScanned] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const scanFn = useServerFn(scanReceipt);
   const [showNewCat, setShowNewCat] = useState(false);
   const [newCatName, setNewCatName] = useState("");
   const [newCatIcon, setNewCatIcon] = useState("💸");
