@@ -7,7 +7,7 @@ import { DEFAULT_CATEGORIES } from "@/lib/categories";
 import { formatNaira } from "@/lib/format";
 import { scanReceipt } from "@/lib/api/receipts.functions";
 import { toast } from "sonner";
-import { Loader2, ScanLine, X, Plus, Check, Image as ImageIcon } from "lucide-react";
+import { Loader2, ScanLine, X, Plus, Check } from "lucide-react";
 
 type Category = { id: string; name: string; icon: string | null; color: string | null; allocated: number; spent: number };
 
