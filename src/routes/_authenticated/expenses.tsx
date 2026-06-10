@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/expenses")({
   component: Expenses,
 });
 
-type Exp = { id: string; amount: number; merchant: string | null; description: string | null; date: string; category_id: string | null; categories: { name: string; icon: string | null; color: string | null } | null };
+type Exp = { id: string; amount: number; merchant: string | null; description: string | null; date: string; category_id: string | null; receipt_url: string | null; categories: { name: string; icon: string | null; color: string | null } | null };
 
 function Expenses() {
   const { user } = useAuth();
