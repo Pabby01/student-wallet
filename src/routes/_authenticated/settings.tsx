@@ -4,7 +4,7 @@ import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { LogOut, Download, RotateCw, PlayCircle } from "lucide-react";
+import { LogOut, Download, RotateCw, PlayCircle, KeyRound, Eye, EyeOff } from "lucide-react";
 import { Walkthrough } from "@/components/Walkthrough";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -99,6 +99,8 @@ function Settings() {
           <span className="flex items-center gap-2"><PlayCircle className="h-4 w-4" /> Replay welcome tour</span>
           <span>→</span>
         </button>
+        <ChangePasswordCard />
+
 
         <button onClick={async () => { await signOut(); navigate({ to: "/auth" }); }}
           className="glass flex w-full items-center justify-between rounded-2xl border border-neon-red/40 p-4 text-sm text-neon-red hover:bg-neon-red/10">
@@ -118,5 +120,64 @@ function Input({ label, value, onChange, type = "text" }: { label: string; value
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-sm outline-none focus:border-neon-purple/70 focus:ring-2 focus:ring-neon-purple/30" />
     </label>
+  );
+}
+
+function ChangePasswordCard() {
+  const [pwd, setPwd] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [show, setShow] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function update() {
+    if (pwd.length < 8) { toast.error("Password must be at least 8 characters"); return; }
+    if (pwd !== confirm) { toast.error("Passwords don't match"); return; }
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password: pwd });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    setPwd(""); setConfirm("");
+    toast.success("Password updated");
+  }
+
+  return (
+    <div className="glass rounded-2xl p-4">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase text-white/60">
+        <KeyRound className="h-3.5 w-3.5" /> Change password
+      </div>
+      <div className="mt-3 space-y-3">
+        <div className="relative">
+          <input
+            type={show ? "text" : "password"}
+            value={pwd}
+            onChange={(e) => setPwd(e.target.value)}
+            placeholder="New password"
+            className="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 pr-10 text-sm outline-none focus:border-neon-purple/70 focus:ring-2 focus:ring-neon-purple/30"
+          />
+          <button
+            type="button"
+            onClick={() => setShow((s) => !s)}
+            className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-lg hover:bg-white/10"
+            aria-label={show ? "Hide password" : "Show password"}
+          >
+            {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
+        <input
+          type={show ? "text" : "password"}
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          placeholder="Confirm new password"
+          className="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-sm outline-none focus:border-neon-purple/70 focus:ring-2 focus:ring-neon-purple/30"
+        />
+        <button
+          onClick={update}
+          disabled={busy}
+          className="w-full rounded-2xl bg-gradient-primary py-2.5 text-sm font-semibold text-white glow-purple active:scale-95 disabled:opacity-60"
+        >
+          {busy ? "Updating…" : "Update password"}
+        </button>
+      </div>
+    </div>
   );
 }
