@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatNaira } from "@/lib/format";
 import { AddExpenseSheet } from "@/components/AddExpenseSheet";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/expenses")({
