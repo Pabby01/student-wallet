@@ -174,7 +174,7 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
     try {
       const { error } = await supabase.from("expenses").insert({
         user_id: user.id, category_id: categoryId, amount: amt, date, merchant: merchant || null,
-        description: description || null, was_scanned: scanned,
+        description: description || null, was_scanned: scanned, receipt_url: receiptUrl,
       });
       if (error) throw error;
       const cat = cats.find((c) => c.id === categoryId);
