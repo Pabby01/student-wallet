@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { DEFAULT_CATEGORIES } from "@/lib/categories";
 import { formatNaira } from "@/lib/format";
+import { scanReceipt } from "@/lib/api/receipts.functions";
 import { toast } from "sonner";
 import { Loader2, ScanLine, X, Plus, Check } from "lucide-react";
 
@@ -21,6 +23,11 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [scanned, setScanned] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const scanFn = useServerFn(scanReceipt);
   const [showNewCat, setShowNewCat] = useState(false);
   const [newCatName, setNewCatName] = useState("");
   const [newCatIcon, setNewCatIcon] = useState("💸");
@@ -62,6 +69,52 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
     setAmount(""); setMerchant(""); setDescription(""); setScanned(false);
     setDate(new Date().toISOString().slice(0, 10));
     setShowNewCat(false); setNewCatName(""); setNewCatIcon("💸");
+    setReceiptUrl(null); setReceiptPreview(null);
+  }
+
+  async function fileToDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = () => reject(r.error);
+      r.readAsDataURL(file);
+    });
+  }
+
+  async function handleReceiptFile(file: File) {
+    if (!user) return;
+    if (file.size > 8 * 1024 * 1024) { toast.error("Image is larger than 8 MB"); return; }
+    if (!file.type.startsWith("image/")) { toast.error("Pick an image file"); return; }
+    setScanning(true);
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setReceiptPreview(dataUrl);
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("receipts").upload(path, file, {
+        contentType: file.type, upsert: false,
+      });
+      if (upErr) throw upErr;
+      setReceiptUrl(path);
+      const result = await scanFn({ data: { imageDataUrl: dataUrl } });
+      let filled = 0;
+      if (result.amount != null) { setAmount(String(result.amount)); filled++; }
+      if (result.merchant) { setMerchant(result.merchant); filled++; }
+      if (result.date) { setDate(result.date); filled++; }
+      if (result.description) { setDescription(result.description); filled++; }
+      if (result.categoryHint) {
+        const hint = result.categoryHint.toLowerCase();
+        const match = cats.find((c) => c.name.toLowerCase().includes(hint) || hint.includes(c.name.toLowerCase()));
+        if (match) setCategoryId(match.id);
+      }
+      setScanned(true);
+      if (filled === 0) toast.warning("Couldn't read the receipt — please fill in manually");
+      else toast.success(`Scanned ✨ ${filled} field${filled === 1 ? "" : "s"} filled — please review`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Scan failed");
+    } finally {
+      setScanning(false);
+    }
   }
 
   async function createCategory() {
@@ -121,7 +174,7 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
     try {
       const { error } = await supabase.from("expenses").insert({
         user_id: user.id, category_id: categoryId, amount: amt, date, merchant: merchant || null,
-        description: description || null, was_scanned: scanned,
+        description: description || null, was_scanned: scanned, receipt_url: receiptUrl,
       });
       if (error) throw error;
       const cat = cats.find((c) => c.id === categoryId);
@@ -140,15 +193,6 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
     }
   }
 
-  function mockScan() {
-    setScanned(true);
-    setAmount("8500");
-    setMerchant("University Bookstore");
-    setDescription("Scanned receipt (demo)");
-    const academic = cats.find((c) => c.name.toLowerCase().includes("academic"));
-    if (academic) setCategoryId(academic.id);
-    toast.success("Receipt scanned: ₦8,500 at University Bookstore");
-  }
 
   return (
     <AnimatePresence>
@@ -176,9 +220,45 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
                 </button>
               </div>
 
-              <button onClick={mockScan} className="mb-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl glass border border-neon-cyan/40 py-2.5 text-sm font-semibold text-neon-cyan glow-cyan">
-                <ScanLine className="h-4 w-4" /> Scan receipt (demo)
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleReceiptFile(f);
+                  e.target.value = "";
+                }}
+              />
+              <button
+                type="button"
+                disabled={scanning}
+                onClick={() => fileInputRef.current?.click()}
+                className="mb-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl glass border border-neon-cyan/40 py-2.5 text-sm font-semibold text-neon-cyan glow-cyan disabled:opacity-60"
+              >
+                {scanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanLine className="h-4 w-4" />}
+                {scanning ? "Scanning receipt…" : "Scan receipt with camera"}
               </button>
+
+              {receiptPreview && (
+                <div className="mb-3 flex items-center gap-3 rounded-2xl glass p-2.5">
+                  <img src={receiptPreview} alt="Receipt" className="h-14 w-14 rounded-xl object-cover" />
+                  <div className="flex-1 text-xs text-white/70">
+                    <div className="font-semibold text-white">Receipt attached</div>
+                    <div>{scanned ? "AI extracted — review fields below" : "Uploaded"}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setReceiptPreview(null); setReceiptUrl(null); setScanned(false); }}
+                    className="grid h-8 w-8 place-items-center rounded-lg hover:bg-white/10"
+                    aria-label="Remove receipt"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
 
               <Field label="Amount (₦)">
                 <input inputMode="decimal" autoFocus value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ""))}

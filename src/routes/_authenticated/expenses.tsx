@@ -6,14 +6,14 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatNaira } from "@/lib/format";
 import { AddExpenseSheet } from "@/components/AddExpenseSheet";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/expenses")({
   component: Expenses,
 });
 
-type Exp = { id: string; amount: number; merchant: string | null; description: string | null; date: string; category_id: string | null; categories: { name: string; icon: string | null; color: string | null } | null };
+type Exp = { id: string; amount: number; merchant: string | null; description: string | null; date: string; category_id: string | null; receipt_url: string | null; categories: { name: string; icon: string | null; color: string | null } | null };
 
 function Expenses() {
   const { user } = useAuth();
@@ -24,7 +24,7 @@ function Expenses() {
   useEffect(() => {
     if (!user) return;
     supabase.from("expenses")
-      .select("id, amount, merchant, description, date, category_id, categories(name, icon, color)")
+      .select("id, amount, merchant, description, date, category_id, receipt_url, categories(name, icon, color)")
       .eq("user_id", user.id).order("date", { ascending: false }).order("created_at", { ascending: false }).limit(100)
       .then(({ data }) => setList((data ?? []) as unknown as Exp[]));
   }, [user, tick]);
@@ -38,8 +38,17 @@ function Expenses() {
       const { data: cat } = await supabase.from("categories").select("spent").eq("id", e.category_id).maybeSingle();
       if (cat) await supabase.from("categories").update({ spent: Math.max(0, Number(cat.spent) - Number(e.amount)) }).eq("id", e.category_id);
     }
+    if (e.receipt_url) {
+      await supabase.storage.from("receipts").remove([e.receipt_url]);
+    }
     toast.success("Deleted");
     setTick((t) => t + 1);
+  }
+
+  async function openReceipt(path: string) {
+    const { data, error } = await supabase.storage.from("receipts").createSignedUrl(path, 60);
+    if (error || !data?.signedUrl) return toast.error("Could not load receipt");
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   }
 
   const grouped = list.reduce<Record<string, Exp[]>>((acc, e) => {
@@ -73,6 +82,11 @@ function Expenses() {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-sm font-bold">{formatNaira(e.amount)}</div>
+                      {e.receipt_url && (
+                        <button onClick={() => openReceipt(e.receipt_url!)} className="grid h-8 w-8 place-items-center rounded-lg text-neon-cyan/80 hover:bg-white/10" aria-label="View receipt">
+                          <ImageIcon className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                       <button onClick={() => del(e)} className="grid h-8 w-8 place-items-center rounded-lg text-white/40 hover:bg-white/10 hover:text-neon-red">
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
