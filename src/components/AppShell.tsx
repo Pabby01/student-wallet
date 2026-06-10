@@ -1,9 +1,21 @@
+/* eslint-disable prettier/prettier */
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { BackgroundFX } from "./BackgroundFX";
 import { BottomNav } from "./BottomNav";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, Settings, Home, Receipt, Wallet, Target, BarChart3, LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import {
+  Bell,
+  Settings,
+  Home,
+  Receipt,
+  Wallet,
+  Target,
+  BarChart3,
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -37,16 +49,15 @@ export function AppShell({ children, hideNav }: { children: ReactNode; hideNav?:
   }, [collapsed]);
 
   const sideW = collapsed ? "lg:w-20" : "lg:w-64";
-  const mainPad = collapsed ? "lg:pl-20" : "lg:pl-64";
 
   return (
-    <div className="relative min-h-screen overflow-x-clip text-foreground">
+    <div className="relative min-h-screen overflow-x-clip text-foreground lg:flex lg:items-stretch">
       <BackgroundFX />
 
       {/* ───── Desktop sidebar ───── */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-white/10 bg-background/50 px-3 py-5 backdrop-blur-xl transition-[width] duration-300 lg:flex",
+          "z-30 hidden flex-col border-r border-white/10 bg-background/50 px-3 py-5 backdrop-blur-xl transition-[width] duration-300 lg:sticky lg:top-0 lg:flex lg:h-screen lg:shrink-0",
           sideW,
         )}
       >
@@ -153,10 +164,16 @@ export function AppShell({ children, hideNav }: { children: ReactNode; hideNav?:
             </div>
           </Link>
           <div className="flex items-center gap-1">
-            <Link to="/alerts" className="grid h-9 w-9 place-items-center rounded-xl hover:bg-white/10">
+            <Link
+              to="/alerts"
+              className="grid h-9 w-9 place-items-center rounded-xl hover:bg-white/10"
+            >
               <Bell className="h-4 w-4" />
             </Link>
-            <Link to="/settings" className="grid h-9 w-9 place-items-center rounded-xl hover:bg-white/10">
+            <Link
+              to="/settings"
+              className="grid h-9 w-9 place-items-center rounded-xl hover:bg-white/10"
+            >
               <Settings className="h-4 w-4" />
             </Link>
           </div>
@@ -166,8 +183,7 @@ export function AppShell({ children, hideNav }: { children: ReactNode; hideNav?:
       {/* ───── Main content ───── */}
       <main
         className={cn(
-          "mx-auto w-full max-w-md px-4 pt-4 pb-28 transition-[padding] duration-300 lg:max-w-none lg:px-8 lg:pt-10 lg:pb-12 xl:px-12",
-          mainPad,
+          "mx-auto w-full max-w-md px-4 pt-4 pb-28 lg:flex-1 lg:min-w-0 lg:max-w-none lg:px-8 lg:pt-10 lg:pb-12 xl:px-12",
         )}
       >
         <div className="lg:mx-auto lg:max-w-6xl">
