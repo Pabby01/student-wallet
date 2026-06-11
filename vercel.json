@@ -2,11 +2,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist/client",
   "framework": null,
-  "functions": {
-    "api/handler.js": {
-      "runtime": "nodejs22.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/assets/(.*)",
