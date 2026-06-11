@@ -19,11 +19,12 @@ export const scanReceipt = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    const apiKey = process.env.RECEIPT_AI_API_KEY;
-    const apiUrl = process.env.RECEIPT_AI_API_URL;
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiUrl = process.env.OPENROUTER_API_URL ?? "https://openrouter.ai/api/v1/chat/completions";
+    const model = process.env.OPENROUTER_MODEL ?? "google/gemini-flash-1.5";
 
-    if (!apiKey || !apiUrl) {
-      throw new Error("Missing receipt scanning environment variables.");
+    if (!apiKey) {
+      throw new Error("Missing OPENROUTER_API_KEY environment variable.");
     }
 
     const res = await fetch(apiUrl, {
@@ -33,7 +34,7 @@ export const scanReceipt = createServerFn({ method: "POST" })
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model,
         messages: [
           { role: "system", content: SYSTEM },
           {
