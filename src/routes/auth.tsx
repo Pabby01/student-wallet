@@ -47,7 +47,19 @@ function AuthPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) navigate({ to: "/home" });
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("onboarded")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.onboarded) {
+          navigate({ to: "/home" });
+        } else {
+          navigate({ to: "/onboarding" });
+        }
+      });
   }, [user, navigate]);
 
   async function submit(e: React.FormEvent) {
@@ -55,7 +67,7 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -64,11 +76,33 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Account created! Let's set up your budget ✨");
+
+        if (data.session) {
+          toast.success("Account created! Let's set up your budget ✨");
+          navigate({ to: "/onboarding" });
+        } else if (data.user) {
+          toast.info(
+            "Account created! Please check your email to confirm your account, then log in.",
+            { duration: 8000 },
+          );
+          setMode("login");
+        }
       } else if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back 👋");
+        if (data.session) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("onboarded")
+            .eq("id", data.session.user.id)
+            .maybeSingle();
+          if (profile?.onboarded) {
+            navigate({ to: "/home" });
+          } else {
+            navigate({ to: "/onboarding" });
+          }
+        }
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo:
