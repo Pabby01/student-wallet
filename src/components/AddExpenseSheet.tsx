@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { DEFAULT_CATEGORIES } from "@/lib/categories";
 import { formatNaira } from "@/lib/format";
 import { scanReceipt } from "@/lib/api/receipts.functions";
+import { compressImage } from "@/lib/image-compress";
 import { toast } from "sonner";
 import { Loader2, ScanLine, X, Plus, Check } from "lucide-react";
 
@@ -96,19 +97,18 @@ export function AddExpenseSheet({
     setReceiptPreview(null);
   }
 
-  async function fileToDataUrl(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => resolve(String(r.result));
-      r.onerror = () => reject(r.error);
-      r.readAsDataURL(file);
-    });
+  async function handleDismiss() {
+    if (receiptUrl) {
+      await supabase.storage.from("receipts").remove([receiptUrl]);
+    }
+    reset();
+    onClose();
   }
 
   async function handleReceiptFile(file: File) {
     if (!user) return;
-    if (file.size > 8 * 1024 * 1024) {
-      toast.error("Image is larger than 8 MB");
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Image is larger than 20 MB");
       return;
     }
     if (!file.type.startsWith("image/")) {
@@ -117,17 +117,25 @@ export function AddExpenseSheet({
     }
     setScanning(true);
     try {
-      const dataUrl = await fileToDataUrl(file);
+      // Remove previously uploaded receipt if replacing before saving
+      if (receiptUrl) {
+        await supabase.storage.from("receipts").remove([receiptUrl]);
+      }
+
+      // Compress client-side to prevent Vercel 4.5 MB body limit and optimize network transfer
+      const { file: compressedFile, dataUrl } = await compressImage(file, 1280, 0.8);
       setReceiptPreview(dataUrl);
-      const ext =
-        (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-      const path = `${user.id}/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("receipts").upload(path, file, {
-        contentType: file.type,
-        upsert: false,
-      });
+
+      const path = `${user.id}/${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage
+        .from("receipts")
+        .upload(path, compressedFile, {
+          contentType: "image/jpeg",
+          upsert: false,
+        });
       if (upErr) throw upErr;
       setReceiptUrl(path);
+
       const result = await scanFn({ data: { imageDataUrl: dataUrl } });
       let filled = 0;
       if (result.amount != null) {
@@ -294,7 +302,7 @@ export function AddExpenseSheet({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={handleDismiss}
             className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
           />
           {/* Wrapper centers on sm+, bottom-sheet on mobile */}
@@ -310,7 +318,7 @@ export function AddExpenseSheet({
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-lg font-bold">Log expense</h3>
                 <button
-                  onClick={onClose}
+                  onClick={handleDismiss}
                   className="grid h-9 w-9 place-items-center rounded-xl hover:bg-white/10"
                 >
                   <X className="h-4 w-4" />
@@ -356,7 +364,10 @@ export function AddExpenseSheet({
                   </div>
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
+                      if (receiptUrl) {
+                        await supabase.storage.from("receipts").remove([receiptUrl]);
+                      }
                       setReceiptPreview(null);
                       setReceiptUrl(null);
                       setScanned(false);
