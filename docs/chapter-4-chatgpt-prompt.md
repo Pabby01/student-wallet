@@ -79,37 +79,37 @@ Now produce Chapter 4 with this structure:
 
 - Briefly explain what Chapter 4 covers.
 
-4.2 Development Environment and Tools
+  4.2 Development Environment and Tools
 
 - Hardware and software environment.
 - Languages, frameworks, libraries, and services used.
 
-4.3 System Implementation
+  4.3 System Implementation
 
 - Overall implementation approach.
 - Subsections for each module implemented.
 - Mention key UI behaviors and workflow.
 - Include where relevant: API interactions and data flow.
 
-4.4 Database Implementation
+  4.4 Database Implementation
 
 - Explain schema and table relationships.
 - Explain user-data isolation and security (RLS).
 
-4.5 Testing and Validation
+  4.5 Testing and Validation
 
 - Unit/integration/manual test strategy (use what applies).
 - Functional test cases in a table with columns:
   Test ID | Feature | Test Steps | Expected Result | Actual Result | Status
 - Include at least 10 realistic test cases, and mark results as "Pass" or "To be validated" based on available evidence.
 
-4.6 Results and Discussion
+  4.6 Results and Discussion
 
 - Discuss what worked well.
 - Discuss observed limitations/challenges.
 - Discuss system performance and usability based on available evidence.
 
-4.7 Chapter Summary
+  4.7 Chapter Summary
 
 - Concise recap and transition to Chapter 5.
 
