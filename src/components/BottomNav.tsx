@@ -19,12 +19,7 @@ export function BottomNav() {
         {items.map(({ to, label, Icon }) => {
           const active = pathname === to || pathname.startsWith(to + "/");
           return (
-            <Link
-              key={to}
-              to={to}
-              className="relative flex-1 py-2"
-              aria-label={label}
-            >
+            <Link key={to} to={to} className="relative flex-1 py-2" aria-label={label}>
               <div className="flex flex-col items-center gap-0.5">
                 {active && (
                   <motion.div

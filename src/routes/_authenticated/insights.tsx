@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
@@ -6,14 +5,30 @@ import { GlassCard } from "@/components/GlassCard";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatNaira } from "@/lib/format";
-import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/insights")({
   component: Insights,
 });
 
-type Exp = { amount: number; date: string; category_id: string | null; categories: { name: string; color: string | null } | null };
+type Exp = {
+  amount: number;
+  date: string;
+  category_id: string | null;
+  categories: { name: string; color: string | null } | null;
+};
 
 function Insights() {
   const { user } = useAuth();
@@ -21,9 +36,14 @@ function Insights() {
 
   useEffect(() => {
     if (!user) return;
-    const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
-    supabase.from("expenses").select("amount, date, category_id, categories(name, color)")
-      .eq("user_id", user.id).gte("date", monthStart.toISOString().slice(0, 10))
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+    supabase
+      .from("expenses")
+      .select("amount, date, category_id, categories(name, color)")
+      .eq("user_id", user.id)
+      .gte("date", monthStart.toISOString().slice(0, 10))
       .then(({ data, error }) => {
         if (error) {
           toast.error("Failed to load insights. Check your connection and try again.");
@@ -52,7 +72,11 @@ function Insights() {
     exps.forEach((e) => {
       const k = e.categories?.name ?? "Other";
       const prev = map.get(k);
-      map.set(k, { name: k, value: (prev?.value ?? 0) + Number(e.amount), color: e.categories?.color ?? "#8B5CF6" });
+      map.set(k, {
+        name: k,
+        value: (prev?.value ?? 0) + Number(e.amount),
+        color: e.categories?.color ?? "#8B5CF6",
+      });
     });
     return Array.from(map.values()).sort((a, b) => b.value - a.value);
   }, [exps]);
@@ -78,30 +102,73 @@ function Insights() {
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="rgba(255,255,255,0.06)" />
-              <XAxis dataKey="date" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 10 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: "rgba(15,23,42,0.95)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, color: "white" }}
-                formatter={(v: number) => formatNaira(v)} labelFormatter={(l) => `Day ${l}`} />
-              <Area type="monotone" dataKey="amount" stroke="#8B5CF6" strokeWidth={2} fill="url(#g1)" />
+              <XAxis
+                dataKey="date"
+                tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "rgba(15,23,42,0.95)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: 12,
+                  color: "white",
+                }}
+                formatter={(v: number) => formatNaira(v)}
+                labelFormatter={(l) => `Day ${l}`}
+              />
+              <Area
+                type="monotone"
+                dataKey="amount"
+                stroke="#8B5CF6"
+                strokeWidth={2}
+                fill="url(#g1)"
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </GlassCard>
 
       <GlassCard className="mt-4">
-        <div className="mb-3 text-sm font-semibold uppercase tracking-wider text-white/60">By category</div>
+        <div className="mb-3 text-sm font-semibold uppercase tracking-wider text-white/60">
+          By category
+        </div>
         {byCat.length === 0 ? (
-          <div className="py-8 text-center text-sm text-white/55">Log some expenses to see your breakdown.</div>
+          <div className="py-8 text-center text-sm text-white/55">
+            Log some expenses to see your breakdown.
+          </div>
         ) : (
           <div className="flex items-center gap-4">
             <div className="h-40 w-40">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={byCat} dataKey="value" innerRadius={42} outerRadius={70} paddingAngle={3} stroke="none">
-                    {byCat.map((c, i) => <Cell key={i} fill={c.color} />)}
+                  <Pie
+                    data={byCat}
+                    dataKey="value"
+                    innerRadius={42}
+                    outerRadius={70}
+                    paddingAngle={3}
+                    stroke="none"
+                  >
+                    {byCat.map((c, i) => (
+                      <Cell key={i} fill={c.color} />
+                    ))}
                   </Pie>
-                  <Tooltip contentStyle={{ background: "rgba(15,23,42,0.95)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, color: "white" }}
-                    formatter={(v: number) => formatNaira(v)} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "rgba(15,23,42,0.95)",
+                      border: "1px solid rgba(255,255,255,0.15)",
+                      borderRadius: 12,
+                      color: "white",
+                    }}
+                    formatter={(v: number) => formatNaira(v)}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -120,7 +187,9 @@ function Insights() {
 
       <div className="mt-4 space-y-2">
         {insights.map((t, i) => (
-          <div key={i} className="glass rounded-2xl p-3 text-sm">{t}</div>
+          <div key={i} className="glass rounded-2xl p-3 text-sm">
+            {t}
+          </div>
         ))}
       </div>
     </AppShell>
@@ -131,8 +200,13 @@ function buildInsights(byCat: { name: string; value: number }[], total: number):
   const tips: string[] = [];
   if (total === 0) return ["🤖 Log a few expenses and we'll surface patterns here."];
   const top = byCat[0];
-  if (top) tips.push(`🔮 Your biggest category is ${top.name} at ${formatNaira(top.value)} (${Math.round((top.value/total)*100)}% of spend).`);
+  if (top)
+    tips.push(
+      `🔮 Your biggest category is ${top.name} at ${formatNaira(top.value)} (${Math.round((top.value / total) * 100)}% of spend).`,
+    );
   tips.push(`📊 Peer comparison: similar students spend ~15% less on Food and ~25% more on Data.`);
-  tips.push(`💡 Tip: cutting ${top?.name ?? "your top category"} by 10% would free up ${formatNaira(Math.round((top?.value ?? total) * 0.1))} for savings.`);
+  tips.push(
+    `💡 Tip: cutting ${top?.name ?? "your top category"} by 10% would free up ${formatNaira(Math.round((top?.value ?? total) * 0.1))} for savings.`,
+  );
   return tips;
 }

@@ -10,7 +10,14 @@ export const Route = createFileRoute("/_authenticated/alerts")({
   component: Alerts,
 });
 
-type Alert = { id: string; alert_type: string | null; message: string | null; was_read: boolean | null; action_taken: boolean | null; created_at: string | null };
+type Alert = {
+  id: string;
+  alert_type: string | null;
+  message: string | null;
+  was_read: boolean | null;
+  action_taken: boolean | null;
+  created_at: string | null;
+};
 
 function Alerts() {
   const { user } = useAuth();
@@ -54,7 +61,9 @@ function Alerts() {
 
   async function takeAction(a: Alert) {
     await supabase.from("alerts").update({ action_taken: true, was_read: true }).eq("id", a.id);
-    setList((l) => l.map((x) => (x.id === a.id ? { ...x, was_read: true, action_taken: true } : x)));
+    setList((l) =>
+      l.map((x) => (x.id === a.id ? { ...x, was_read: true, action_taken: true } : x)),
+    );
     toast.success("Marked as handled 👍");
   }
 
@@ -67,7 +76,11 @@ function Alerts() {
     if (!user) return;
     const unread = list.filter((a) => !a.was_read);
     if (unread.length === 0) return;
-    await supabase.from("alerts").update({ was_read: true }).eq("user_id", user.id).eq("was_read", false);
+    await supabase
+      .from("alerts")
+      .update({ was_read: true })
+      .eq("user_id", user.id)
+      .eq("was_read", false);
     setList((l) => l.map((x) => ({ ...x, was_read: true })));
     toast.success(`Marked ${unread.length} as read`);
   }
@@ -95,12 +108,18 @@ function Alerts() {
         </div>
         <div className="flex gap-2">
           {unread > 0 && (
-            <button onClick={markAllRead} className="inline-flex items-center gap-1 rounded-xl glass px-3 py-1.5 text-xs font-semibold hover:bg-white/10">
+            <button
+              onClick={markAllRead}
+              className="inline-flex items-center gap-1 rounded-xl glass px-3 py-1.5 text-xs font-semibold hover:bg-white/10"
+            >
               <CheckCheck className="h-3.5 w-3.5" /> Mark all read
             </button>
           )}
           {list.length > 0 && (
-            <button onClick={clearAll} className="inline-flex items-center gap-1 rounded-xl glass px-3 py-1.5 text-xs font-semibold text-neon-red hover:bg-neon-red/10">
+            <button
+              onClick={clearAll}
+              className="inline-flex items-center gap-1 rounded-xl glass px-3 py-1.5 text-xs font-semibold text-neon-red hover:bg-neon-red/10"
+            >
               <Trash2 className="h-3.5 w-3.5" /> Clear
             </button>
           )}
@@ -117,15 +136,23 @@ function Alerts() {
                 ? "border-neon-amber/40 bg-neon-amber/10"
                 : "border-white/10 bg-white/5";
           return (
-            <div key={a.id} className={`glass flex items-start justify-between gap-3 rounded-2xl border p-3 ${tone}`}>
+            <div
+              key={a.id}
+              className={`glass flex items-start justify-between gap-3 rounded-2xl border p-3 ${tone}`}
+            >
               <div className="flex-1">
-                <div className={`text-sm ${a.was_read ? "text-white/70" : "font-semibold"}`}>{a.message}</div>
+                <div className={`text-sm ${a.was_read ? "text-white/70" : "font-semibold"}`}>
+                  {a.message}
+                </div>
                 <div className="mt-1 text-[11px] text-white/50">
                   {a.created_at ? new Date(a.created_at).toLocaleString() : ""}
                 </div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {!a.was_read && (
-                    <button onClick={() => markRead(a)} className="rounded-lg bg-white/10 px-2.5 py-1 text-[11px] font-semibold">
+                    <button
+                      onClick={() => markRead(a)}
+                      className="rounded-lg bg-white/10 px-2.5 py-1 text-[11px] font-semibold"
+                    >
                       Mark read
                     </button>
                   )}
@@ -151,7 +178,9 @@ function Alerts() {
           );
         })}
         {!loading && list.length === 0 && (
-          <div className="glass rounded-3xl p-8 text-center text-sm text-white/60">All quiet 🎶 No alerts yet.</div>
+          <div className="glass rounded-3xl p-8 text-center text-sm text-white/60">
+            All quiet 🎶 No alerts yet.
+          </div>
         )}
         {loading && list.length === 0 && (
           <div className="glass rounded-3xl p-8 text-center text-sm text-white/60">Loading…</div>

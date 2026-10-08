@@ -9,11 +9,26 @@ import { scanReceipt } from "@/lib/api/receipts.functions";
 import { toast } from "sonner";
 import { Loader2, ScanLine, X, Plus, Check } from "lucide-react";
 
-type Category = { id: string; name: string; icon: string | null; color: string | null; allocated: number; spent: number };
+type Category = {
+  id: string;
+  name: string;
+  icon: string | null;
+  color: string | null;
+  allocated: number;
+  spent: number;
+};
 
 const EMOJIS = ["💸", "🍲", "🚌", "📚", "📱", "🎮", "🍔", "🛍️", "💰", "🏠", "🎬", "✈️", "⚡", "🎁"];
 
-export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onClose: () => void; onSaved?: () => void }) {
+export function AddExpenseSheet({
+  open,
+  onClose,
+  onSaved,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSaved?: () => void;
+}) {
   const { user } = useAuth();
   const [cats, setCats] = useState<Category[]>([]);
   const [amount, setAmount] = useState("");
@@ -52,7 +67,10 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
         allocated: 0,
         spent: 0,
       }));
-      const { data: inserted } = await supabase.from("categories").insert(rows).select("id, name, icon, color, allocated, spent");
+      const { data: inserted } = await supabase
+        .from("categories")
+        .insert(rows)
+        .select("id, name, icon, color, allocated, spent");
       list = (inserted ?? []) as Category[];
     }
     setCats(list);
@@ -66,10 +84,16 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
   }, [open, user]);
 
   function reset() {
-    setAmount(""); setMerchant(""); setDescription(""); setScanned(false);
+    setAmount("");
+    setMerchant("");
+    setDescription("");
+    setScanned(false);
     setDate(new Date().toISOString().slice(0, 10));
-    setShowNewCat(false); setNewCatName(""); setNewCatIcon("💸");
-    setReceiptUrl(null); setReceiptPreview(null);
+    setShowNewCat(false);
+    setNewCatName("");
+    setNewCatIcon("💸");
+    setReceiptUrl(null);
+    setReceiptPreview(null);
   }
 
   async function fileToDataUrl(file: File): Promise<string> {
@@ -83,33 +107,58 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
 
   async function handleReceiptFile(file: File) {
     if (!user) return;
-    if (file.size > 8 * 1024 * 1024) { toast.error("Image is larger than 8 MB"); return; }
-    if (!file.type.startsWith("image/")) { toast.error("Pick an image file"); return; }
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Image is larger than 8 MB");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Pick an image file");
+      return;
+    }
     setScanning(true);
     try {
       const dataUrl = await fileToDataUrl(file);
       setReceiptPreview(dataUrl);
-      const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const ext =
+        (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
       const path = `${user.id}/${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("receipts").upload(path, file, {
-        contentType: file.type, upsert: false,
+        contentType: file.type,
+        upsert: false,
       });
       if (upErr) throw upErr;
       setReceiptUrl(path);
       const result = await scanFn({ data: { imageDataUrl: dataUrl } });
       let filled = 0;
-      if (result.amount != null) { setAmount(String(result.amount)); filled++; }
-      if (result.merchant) { setMerchant(result.merchant); filled++; }
-      if (result.date) { setDate(result.date); filled++; }
-      if (result.description) { setDescription(result.description); filled++; }
+      if (result.amount != null) {
+        setAmount(String(result.amount));
+        filled++;
+      }
+      if (result.merchant) {
+        setMerchant(result.merchant);
+        filled++;
+      }
+      if (result.date) {
+        setDate(result.date);
+        filled++;
+      }
+      if (result.description) {
+        setDescription(result.description);
+        filled++;
+      }
       if (result.categoryHint) {
         const hint = result.categoryHint.toLowerCase();
-        const match = cats.find((c) => c.name.toLowerCase().includes(hint) || hint.includes(c.name.toLowerCase()));
+        const match = cats.find(
+          (c) => c.name.toLowerCase().includes(hint) || hint.includes(c.name.toLowerCase()),
+        );
         if (match) setCategoryId(match.id);
       }
       setScanned(true);
       if (filled === 0) toast.warning("Couldn't read the receipt — please fill in manually");
-      else toast.success(`Scanned ✨ ${filled} field${filled === 1 ? "" : "s"} filled — please review`);
+      else
+        toast.success(
+          `Scanned ✨ ${filled} field${filled === 1 ? "" : "s"} filled — please review`,
+        );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Scan failed");
     } finally {
@@ -120,19 +169,32 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
   async function createCategory() {
     if (!user) return;
     const name = newCatName.trim();
-    if (!name) { toast.error("Name your category"); return; }
+    if (!name) {
+      toast.error("Name your category");
+      return;
+    }
     setCreatingCat(true);
     try {
       const { data, error } = await supabase
         .from("categories")
-        .insert({ user_id: user.id, name, icon: newCatIcon, color: "#8B5CF6", bucket: "wants", allocated: 0, spent: 0 })
+        .insert({
+          user_id: user.id,
+          name,
+          icon: newCatIcon,
+          color: "#8B5CF6",
+          bucket: "wants",
+          allocated: 0,
+          spent: 0,
+        })
         .select("id, name, icon, color, allocated, spent")
         .single();
       if (error) throw error;
       const next = [...cats, data as Category];
       setCats(next);
       setCategoryId((data as Category).id);
-      setShowNewCat(false); setNewCatName(""); setNewCatIcon("💸");
+      setShowNewCat(false);
+      setNewCatName("");
+      setNewCatIcon("💸");
       toast.success("Category added");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to create");
@@ -143,23 +205,39 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
 
   async function maybeAlert(catId: string) {
     if (!user) return;
-    const { data } = await supabase.from("categories").select("name, allocated, spent").eq("id", catId).maybeSingle();
+    const { data } = await supabase
+      .from("categories")
+      .select("name, allocated, spent")
+      .eq("id", catId)
+      .maybeSingle();
     if (!data || !data.allocated) return;
     const p = Math.round((Number(data.spent) / Number(data.allocated)) * 100);
     let type: "budget_75" | "budget_90" | "budget_100" | null = null;
     let msg = "";
-    if (p >= 100) { type = "budget_100"; msg = `🚨 You've blown your ${data.name} budget (${p}%).`; }
-    else if (p >= 90) { type = "budget_90"; msg = `⚠️ ${p}% of ${data.name} used — only ${formatNaira(Number(data.allocated) - Number(data.spent))} left.`; }
-    else if (p >= 75) { type = "budget_75"; msg = `💡 Heads up — ${p}% of ${data.name} spent.`; }
+    if (p >= 100) {
+      type = "budget_100";
+      msg = `🚨 You've blown your ${data.name} budget (${p}%).`;
+    } else if (p >= 90) {
+      type = "budget_90";
+      msg = `⚠️ ${p}% of ${data.name} used — only ${formatNaira(Number(data.allocated) - Number(data.spent))} left.`;
+    } else if (p >= 75) {
+      type = "budget_75";
+      msg = `💡 Heads up — ${p}% of ${data.name} spent.`;
+    }
     if (!type) return;
-    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const { count } = await supabase
       .from("alerts")
       .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id).eq("category_id", catId).eq("alert_type", type)
+      .eq("user_id", user.id)
+      .eq("category_id", catId)
+      .eq("alert_type", type)
       .gte("created_at", today.toISOString());
     if ((count ?? 0) >= 3) return;
-    await supabase.from("alerts").insert({ user_id: user.id, category_id: catId, alert_type: type, message: msg });
+    await supabase
+      .from("alerts")
+      .insert({ user_id: user.id, category_id: catId, alert_type: type, message: msg });
     if (type === "budget_100") toast.error(msg);
     else if (type === "budget_90") toast.warning(msg);
     else toast.info(msg);
@@ -168,18 +246,33 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
   async function save() {
     if (!user) return;
     const amt = Number(amount);
-    if (!amt || amt <= 0) { toast.error("Enter a valid amount"); return; }
-    if (!categoryId) { toast.error("Pick a category"); return; }
+    if (!amt || amt <= 0) {
+      toast.error("Enter a valid amount");
+      return;
+    }
+    if (!categoryId) {
+      toast.error("Pick a category");
+      return;
+    }
     setSaving(true);
     try {
       const { error } = await supabase.from("expenses").insert({
-        user_id: user.id, category_id: categoryId, amount: amt, date, merchant: merchant || null,
-        description: description || null, was_scanned: scanned, receipt_url: receiptUrl,
+        user_id: user.id,
+        category_id: categoryId,
+        amount: amt,
+        date,
+        merchant: merchant || null,
+        description: description || null,
+        was_scanned: scanned,
+        receipt_url: receiptUrl,
       });
       if (error) throw error;
       const cat = cats.find((c) => c.id === categoryId);
       if (cat) {
-        await supabase.from("categories").update({ spent: Number(cat.spent) + amt }).eq("id", categoryId);
+        await supabase
+          .from("categories")
+          .update({ spent: Number(cat.spent) + amt })
+          .eq("id", categoryId);
       }
       toast.success("Expense logged ✨");
       await maybeAlert(categoryId);
@@ -193,13 +286,14 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
     }
   }
 
-
   return (
     <AnimatePresence>
       {open && (
         <>
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
           />
@@ -215,7 +309,10 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
               <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/30 sm:hidden" />
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-lg font-bold">Log expense</h3>
-                <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-white/10">
+                <button
+                  onClick={onClose}
+                  className="grid h-9 w-9 place-items-center rounded-xl hover:bg-white/10"
+                >
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -238,20 +335,32 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
                 onClick={() => fileInputRef.current?.click()}
                 className="mb-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl glass border border-neon-cyan/40 py-2.5 text-sm font-semibold text-neon-cyan glow-cyan disabled:opacity-60"
               >
-                {scanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanLine className="h-4 w-4" />}
+                {scanning ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ScanLine className="h-4 w-4" />
+                )}
                 {scanning ? "Scanning receipt…" : "Scan receipt with camera"}
               </button>
 
               {receiptPreview && (
                 <div className="mb-3 flex items-center gap-3 rounded-2xl glass p-2.5">
-                  <img src={receiptPreview} alt="Receipt" className="h-14 w-14 rounded-xl object-cover" />
+                  <img
+                    src={receiptPreview}
+                    alt="Receipt"
+                    className="h-14 w-14 rounded-xl object-cover"
+                  />
                   <div className="flex-1 text-xs text-white/70">
                     <div className="font-semibold text-white">Receipt attached</div>
                     <div>{scanned ? "AI extracted — review fields below" : "Uploaded"}</div>
                   </div>
                   <button
                     type="button"
-                    onClick={() => { setReceiptPreview(null); setReceiptUrl(null); setScanned(false); }}
+                    onClick={() => {
+                      setReceiptPreview(null);
+                      setReceiptUrl(null);
+                      setScanned(false);
+                    }}
                     className="grid h-8 w-8 place-items-center rounded-lg hover:bg-white/10"
                     aria-label="Remove receipt"
                   >
@@ -261,8 +370,14 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
               )}
 
               <Field label="Amount (₦)">
-                <input inputMode="decimal" autoFocus value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ""))}
-                  placeholder="0" className="ax-input text-2xl font-bold" />
+                <input
+                  inputMode="decimal"
+                  autoFocus
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ""))}
+                  placeholder="0"
+                  className="ax-input text-2xl font-bold"
+                />
               </Field>
 
               <div className="mt-3">
@@ -320,7 +435,12 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
                             disabled={creatingCat}
                             className="inline-flex items-center gap-1 rounded-xl bg-gradient-primary px-3 py-2 text-xs font-semibold text-white glow-purple disabled:opacity-60"
                           >
-                            {creatingCat ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />} Add
+                            {creatingCat ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <Check className="h-3 w-3" />
+                            )}{" "}
+                            Add
                           </button>
                         </div>
                         <div className="mt-2 flex flex-wrap gap-1.5">
@@ -330,7 +450,9 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
                               type="button"
                               onClick={() => setNewCatIcon(e)}
                               className={`grid h-8 w-8 place-items-center rounded-lg text-base transition-all ${
-                                newCatIcon === e ? "bg-gradient-primary glow-purple" : "bg-white/5 hover:bg-white/10"
+                                newCatIcon === e
+                                  ? "bg-gradient-primary glow-purple"
+                                  : "bg-white/5 hover:bg-white/10"
                               }`}
                             >
                               {e}
@@ -345,19 +467,37 @@ export function AddExpenseSheet({ open, onClose, onSaved }: { open: boolean; onC
 
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <Field label="Date">
-                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="ax-input" />
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="ax-input"
+                  />
                 </Field>
                 <Field label="Merchant">
-                  <input value={merchant} onChange={(e) => setMerchant(e.target.value)} placeholder="e.g. Cafeteria" className="ax-input" />
+                  <input
+                    value={merchant}
+                    onChange={(e) => setMerchant(e.target.value)}
+                    placeholder="e.g. Cafeteria"
+                    className="ax-input"
+                  />
                 </Field>
               </div>
 
               <Field label="Note (optional)">
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="ax-input" />
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={2}
+                  className="ax-input"
+                />
               </Field>
 
-              <button disabled={saving} onClick={save}
-                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 font-semibold text-white glow-purple active:scale-[0.98] disabled:opacity-60">
+              <button
+                disabled={saving}
+                onClick={save}
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3 font-semibold text-white glow-purple active:scale-[0.98] disabled:opacity-60"
+              >
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />} Save expense
               </button>
 

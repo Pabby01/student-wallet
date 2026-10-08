@@ -20,7 +20,10 @@ export const DEFAULT_CATEGORIES: DefaultCategory[] = [
   { name: "Savings", icon: "💰", color: "#10B981", bucket: "savings", defaultPct: 20 },
 ];
 
-export const BUCKET_META: Record<DefaultCategory["bucket"], { label: string; color: string; pct: number }> = {
+export const BUCKET_META: Record<
+  DefaultCategory["bucket"],
+  { label: string; color: string; pct: number }
+> = {
   needs: { label: "Needs", color: "#06B6D4", pct: 60 },
   wants: { label: "Wants", color: "#EC4899", pct: 20 },
   savings: { label: "Savings", color: "#10B981", pct: 20 },

@@ -20,7 +20,8 @@ export const scanReceipt = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const apiKey = process.env.OPENROUTER_API_KEY;
-    const apiUrl = process.env.OPENROUTER_API_URL ?? "https://openrouter.ai/api/v1/chat/completions";
+    const apiUrl =
+      process.env.OPENROUTER_API_URL ?? "https://openrouter.ai/api/v1/chat/completions";
     const model = process.env.OPENROUTER_MODEL ?? "google/gemini-flash-1.5";
 
     if (!apiKey) {
@@ -52,7 +53,8 @@ export const scanReceipt = createServerFn({ method: "POST" })
     if (!res.ok) {
       const txt = await res.text();
       if (res.status === 429) throw new Error("Rate limited. Please wait a moment and try again.");
-      if (res.status === 402) throw new Error("Receipt scanning credits are unavailable. Try again later.");
+      if (res.status === 402)
+        throw new Error("Receipt scanning credits are unavailable. Try again later.");
       throw new Error(`Scan failed (${res.status}): ${txt.slice(0, 200)}`);
     }
 

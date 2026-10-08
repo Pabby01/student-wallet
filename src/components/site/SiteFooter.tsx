@@ -36,7 +36,8 @@ export function SiteFooter() {
           <div className="lg:col-span-2">
             <Logo size="lg" />
             <p className="mt-4 max-w-sm text-sm text-white/60">
-              Smart budgets, cash-first tracking, and savings goals for Nigerian university students.
+              Smart budgets, cash-first tracking, and savings goals for Nigerian university
+              students.
             </p>
             <div className="mt-5 flex gap-3">
               {[Twitter, Instagram, Github].map((I, i) => (

@@ -4,8 +4,7 @@ export const NGN = new Intl.NumberFormat("en-NG", {
   maximumFractionDigits: 0,
 });
 
-export const formatNaira = (n: number | null | undefined) =>
-  NGN.format(Number(n ?? 0));
+export const formatNaira = (n: number | null | undefined) => NGN.format(Number(n ?? 0));
 
 export const formatNumber = (n: number | null | undefined) =>
   new Intl.NumberFormat("en-NG", { maximumFractionDigits: 0 }).format(Number(n ?? 0));

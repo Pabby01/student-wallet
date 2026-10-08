@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { BackgroundFX } from "./BackgroundFX";
@@ -40,12 +39,16 @@ export function AppShell({ children, hideNav }: { children: ReactNode; hideNav?:
     try {
       const v = localStorage.getItem(STORAGE_KEY);
       if (v === "1") setCollapsed(true);
-    } catch { /* localStorage unavailable (private browsing) */ }
+    } catch {
+      /* localStorage unavailable (private browsing) */
+    }
   }, []);
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, collapsed ? "1" : "0");
-    } catch { /* localStorage unavailable (private browsing) */ }
+    } catch {
+      /* localStorage unavailable (private browsing) */
+    }
   }, [collapsed]);
 
   const sideW = collapsed ? "lg:w-20" : "lg:w-64";

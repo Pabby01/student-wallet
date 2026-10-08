@@ -61,7 +61,10 @@ function ResetPasswordPage() {
     <div className="relative grid min-h-screen place-items-center px-4 py-10">
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-neon-purple/40 blur-3xl animate-float-slow" />
-        <div className="absolute -bottom-40 right-0 h-[28rem] w-[28rem] rounded-full bg-neon-pink/40 blur-3xl animate-float-slow" style={{ animationDelay: "-5s" }} />
+        <div
+          className="absolute -bottom-40 right-0 h-[28rem] w-[28rem] rounded-full bg-neon-pink/40 blur-3xl animate-float-slow"
+          style={{ animationDelay: "-5s" }}
+        />
       </div>
       <div className="absolute left-0 right-0 top-0 flex justify-center px-4 py-4">
         <Logo size="sm" />
@@ -76,7 +79,9 @@ function ResetPasswordPage() {
             <ShieldCheck className="h-6 w-6" />
           </div>
           <h1 className="mt-4 text-2xl font-bold">Set a new password</h1>
-          <p className="mt-1 text-sm text-white/60">Pick something strong — at least 6 characters.</p>
+          <p className="mt-1 text-sm text-white/60">
+            Pick something strong — at least 6 characters.
+          </p>
         </div>
 
         <form onSubmit={submit} className="mt-6 space-y-3">

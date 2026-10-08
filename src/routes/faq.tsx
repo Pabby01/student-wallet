@@ -10,7 +10,8 @@ export const Route = createFileRoute("/faq")({
       { title: "FAQ — StudentFinance+" },
       {
         name: "description",
-        content: "Answers to common questions about StudentFinance+: pricing, privacy, offline mode, supported phones, and more.",
+        content:
+          "Answers to common questions about StudentFinance+: pricing, privacy, offline mode, supported phones, and more.",
       },
       { property: "og:title", content: "StudentFinance+ FAQ" },
       { property: "og:description", content: "Everything you need to know before signing up." },
@@ -20,17 +21,61 @@ export const Route = createFileRoute("/faq")({
 });
 
 const FAQS: { cat: string; q: string; a: string }[] = [
-  { cat: "Pricing", q: "Is StudentFinance+ really free?", a: "Yes — completely free for students. We may add optional premium features later, but core budgeting will always be free." },
-  { cat: "Pricing", q: "Will I be charged later?", a: "No. We promise you'll never be charged for anything you signed up for under the free plan." },
-  { cat: "Privacy", q: "Is my data safe?", a: "Your data is encrypted at rest and in transit. Only you can see it. We never sell your data to anyone." },
-  { cat: "Privacy", q: "Do you share my info with my school?", a: "Never. Your account is private to you, even if you sign up with a school email." },
-  { cat: "Setup", q: "Do I have to link my bank?", a: "Nope. StudentFinance+ is cash-first. You can use it 100% without a bank account or card." },
-  { cat: "Setup", q: "How long does it take to set up?", a: "About 30 seconds. Enter your monthly allowance, pick your budget split, and you're tracking." },
-  { cat: "Features", q: "Does it work offline?", a: "Yes. Add expenses without internet; they sync automatically when you reconnect." },
-  { cat: "Features", q: "Can I track in naira and USD?", a: "Naira is the primary currency. USD tracking is on our roadmap." },
-  { cat: "Features", q: "Can I share a budget with my roommates?", a: "Shared roommate budgets are coming soon — drop us a note on the contact page to join the beta." },
-  { cat: "Support", q: "Which phones are supported?", a: "Any Android phone or iPhone with a modern browser (Chrome, Safari, Firefox). It works on tablets and laptops too." },
-  { cat: "Support", q: "How do I delete my account?", a: "Go to Settings → Account → Delete account. Everything is wiped within 7 days." },
+  {
+    cat: "Pricing",
+    q: "Is StudentFinance+ really free?",
+    a: "Yes — completely free for students. We may add optional premium features later, but core budgeting will always be free.",
+  },
+  {
+    cat: "Pricing",
+    q: "Will I be charged later?",
+    a: "No. We promise you'll never be charged for anything you signed up for under the free plan.",
+  },
+  {
+    cat: "Privacy",
+    q: "Is my data safe?",
+    a: "Your data is encrypted at rest and in transit. Only you can see it. We never sell your data to anyone.",
+  },
+  {
+    cat: "Privacy",
+    q: "Do you share my info with my school?",
+    a: "Never. Your account is private to you, even if you sign up with a school email.",
+  },
+  {
+    cat: "Setup",
+    q: "Do I have to link my bank?",
+    a: "Nope. StudentFinance+ is cash-first. You can use it 100% without a bank account or card.",
+  },
+  {
+    cat: "Setup",
+    q: "How long does it take to set up?",
+    a: "About 30 seconds. Enter your monthly allowance, pick your budget split, and you're tracking.",
+  },
+  {
+    cat: "Features",
+    q: "Does it work offline?",
+    a: "Yes. Add expenses without internet; they sync automatically when you reconnect.",
+  },
+  {
+    cat: "Features",
+    q: "Can I track in naira and USD?",
+    a: "Naira is the primary currency. USD tracking is on our roadmap.",
+  },
+  {
+    cat: "Features",
+    q: "Can I share a budget with my roommates?",
+    a: "Shared roommate budgets are coming soon — drop us a note on the contact page to join the beta.",
+  },
+  {
+    cat: "Support",
+    q: "Which phones are supported?",
+    a: "Any Android phone or iPhone with a modern browser (Chrome, Safari, Firefox). It works on tablets and laptops too.",
+  },
+  {
+    cat: "Support",
+    q: "How do I delete my account?",
+    a: "Go to Settings → Account → Delete account. Everything is wiped within 7 days.",
+  },
 ];
 
 function FAQPage() {
@@ -38,7 +83,9 @@ function FAQPage() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   const filtered = FAQS.filter(
-    (f) => f.q.toLowerCase().includes(query.toLowerCase()) || f.a.toLowerCase().includes(query.toLowerCase()),
+    (f) =>
+      f.q.toLowerCase().includes(query.toLowerCase()) ||
+      f.a.toLowerCase().includes(query.toLowerCase()),
   );
   const cats = Array.from(new Set(filtered.map((f) => f.cat)));
 
@@ -76,11 +123,15 @@ function FAQPage() {
 
         <div className="mt-12 space-y-10">
           {cats.length === 0 && (
-            <p className="text-center text-sm text-white/60">No results. Try a different keyword.</p>
+            <p className="text-center text-sm text-white/60">
+              No results. Try a different keyword.
+            </p>
           )}
           {cats.map((cat) => (
             <div key={cat}>
-              <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-white/50">{cat}</h2>
+              <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-white/50">
+                {cat}
+              </h2>
               <div className="space-y-3">
                 {filtered
                   .filter((f) => f.cat === cat)
@@ -88,11 +139,7 @@ function FAQPage() {
                     const idx = FAQS.indexOf(f);
                     const open = openIdx === idx;
                     return (
-                      <motion.div
-                        key={f.q}
-                        layout
-                        className="glass overflow-hidden rounded-2xl"
-                      >
+                      <motion.div key={f.q} layout className="glass overflow-hidden rounded-2xl">
                         <button
                           onClick={() => setOpenIdx(open ? null : idx)}
                           className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
@@ -114,7 +161,9 @@ function FAQPage() {
                               transition={{ duration: 0.25 }}
                               className="overflow-hidden"
                             >
-                              <p className="px-5 pb-5 text-sm leading-relaxed text-white/70">{f.a}</p>
+                              <p className="px-5 pb-5 text-sm leading-relaxed text-white/70">
+                                {f.a}
+                              </p>
                             </motion.div>
                           )}
                         </AnimatePresence>

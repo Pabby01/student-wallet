@@ -12,10 +12,14 @@ export const Route = createFileRoute("/how-it-works")({
       { title: "How it works — StudentFinance+" },
       {
         name: "description",
-        content: "A 4-step walkthrough of StudentFinance+: sign up, set your split, log expenses, and stay on track all month.",
+        content:
+          "A 4-step walkthrough of StudentFinance+: sign up, set your split, log expenses, and stay on track all month.",
       },
       { property: "og:title", content: "How StudentFinance+ works" },
-      { property: "og:description", content: "Set up a smart budget in under a minute. See exactly how." },
+      {
+        property: "og:description",
+        content: "Set up a smart budget in under a minute. See exactly how.",
+      },
     ],
   }),
   component: HowItWorksPage,
@@ -83,8 +87,12 @@ function HowItWorksPage() {
             >
               <TiltCard className="rounded-3xl" max={10}>
                 <div className="glass relative h-full rounded-3xl p-6">
-                  <div className="absolute right-5 top-5 text-3xl font-black text-white/10">{s.n}</div>
-                  <div className={`mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${s.tint} glow-purple`}>
+                  <div className="absolute right-5 top-5 text-3xl font-black text-white/10">
+                    {s.n}
+                  </div>
+                  <div
+                    className={`mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${s.tint} glow-purple`}
+                  >
                     <s.Icon className="h-6 w-6 text-white" />
                   </div>
                   <h3 className="text-lg font-bold">{s.t}</h3>
@@ -102,8 +110,9 @@ function HowItWorksPage() {
               A finance app that <span className="text-gradient">speaks your language</span>
             </h2>
             <p className="mt-4 text-white/70">
-              StudentFinance+ understands cash spending, market jargon, and the realities of student life
-              in Nigeria. From bolt rides to suya stops, every naira is tracked the way you actually spend.
+              StudentFinance+ understands cash spending, market jargon, and the realities of student
+              life in Nigeria. From bolt rides to suya stops, every naira is tracked the way you
+              actually spend.
             </p>
             <ul className="mt-6 space-y-3 text-sm text-white/85">
               {[
@@ -156,8 +165,8 @@ function HowItWorksPage() {
               Made <span className="text-gradient">with students</span>, for students.
             </h2>
             <p className="mt-4 text-white/70">
-              We co-designed StudentFinance+ with hundreds of students from FUNAAB, UNILAG, OAU, UI, and
-              ABU. Every feature exists because a real student asked for it.
+              We co-designed StudentFinance+ with hundreds of students from FUNAAB, UNILAG, OAU, UI,
+              and ABU. Every feature exists because a real student asked for it.
             </p>
           </div>
         </div>

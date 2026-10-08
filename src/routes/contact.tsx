@@ -13,7 +13,8 @@ export const Route = createFileRoute("/contact")({
       { title: "Contact — StudentFinance+" },
       {
         name: "description",
-        content: "Get in touch with the StudentFinance+ team. Questions, partnership ideas, feedback — we read everything.",
+        content:
+          "Get in touch with the StudentFinance+ team. Questions, partnership ideas, feedback — we read everything.",
       },
       { property: "og:title", content: "Contact StudentFinance+" },
       { property: "og:description", content: "We'd love to hear from you. Reach out anytime." },
@@ -71,9 +72,24 @@ function ContactPage() {
           {/* Info cards */}
           <div className="space-y-4 lg:col-span-2">
             {[
-              { Icon: Mail, label: "Email", value: "hello@studentfinanceplus.ng", tint: "from-neon-purple to-neon-pink" },
-              { Icon: MessageCircle, label: "WhatsApp", value: "+234 800 000 0000", tint: "from-neon-cyan to-neon-purple" },
-              { Icon: MapPin, label: "Campus HQ", value: "FUNAAB, Abeokuta, Nigeria", tint: "from-neon-amber to-neon-pink" },
+              {
+                Icon: Mail,
+                label: "Email",
+                value: "hello@studentfinanceplus.ng",
+                tint: "from-neon-purple to-neon-pink",
+              },
+              {
+                Icon: MessageCircle,
+                label: "WhatsApp",
+                value: "+234 800 000 0000",
+                tint: "from-neon-cyan to-neon-purple",
+              },
+              {
+                Icon: MapPin,
+                label: "Campus HQ",
+                value: "FUNAAB, Abeokuta, Nigeria",
+                tint: "from-neon-amber to-neon-pink",
+              },
             ].map(({ Icon, label, value, tint }, i) => (
               <TiltCard key={label} className="rounded-3xl" max={8}>
                 <motion.div
@@ -83,7 +99,9 @@ function ContactPage() {
                   transition={{ delay: i * 0.08 }}
                   className="glass flex items-center gap-4 rounded-3xl p-5"
                 >
-                  <div className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${tint} glow-purple`}>
+                  <div
+                    className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${tint} glow-purple`}
+                  >
                     <Icon className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -166,7 +184,11 @@ function ContactPage() {
                   disabled={loading}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-5 py-3 text-sm font-semibold text-white glow-purple transition-transform hover:scale-[1.01] disabled:opacity-60"
                 >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
                   Send message
                 </button>
               </>

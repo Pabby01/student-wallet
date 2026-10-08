@@ -9,7 +9,12 @@ export function Logo({
   withText?: boolean;
   size?: "sm" | "md" | "lg";
 }) {
-  const dims = size === "sm" ? "h-8 w-8 text-base" : size === "lg" ? "h-14 w-14 text-2xl" : "h-10 w-10 text-lg";
+  const dims =
+    size === "sm"
+      ? "h-8 w-8 text-base"
+      : size === "lg"
+        ? "h-14 w-14 text-2xl"
+        : "h-10 w-10 text-lg";
   const text = size === "sm" ? "text-sm" : size === "lg" ? "text-2xl" : "text-base";
   return (
     <div className={cn("flex items-center gap-2", className)}>

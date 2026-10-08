@@ -30,7 +30,10 @@ export const Route = createFileRoute("/")({
           "Cash-first expense tracker, AI alerts, and savings goals built for Nigerian university students. Stop running out of money before month-end.",
       },
       { property: "og:title", content: "StudentFinance+ — Smart budgets for students" },
-      { property: "og:description", content: "Crush savings goals and dodge broke weeks. Built for Nigerian uni life." },
+      {
+        property: "og:description",
+        content: "Crush savings goals and dodge broke weeks. Built for Nigerian uni life.",
+      },
     ],
   }),
   component: Landing,
@@ -57,8 +60,6 @@ function Landing() {
     </div>
   );
 }
-
-
 
 /* ───────────────────── Hero with 3D parallax ───────────────────── */
 function Hero() {
@@ -109,7 +110,8 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             className="inline-flex items-center gap-2 rounded-full glass px-3 py-1.5 text-xs font-medium text-white/80"
           >
-            <Sparkles className="h-3.5 w-3.5 text-neon-amber" /> Built for Nigerian university students
+            <Sparkles className="h-3.5 w-3.5 text-neon-amber" /> Built for Nigerian university
+            students
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 18 }}
@@ -125,8 +127,8 @@ function Hero() {
             transition={{ delay: 0.12 }}
             className="mt-5 max-w-xl text-base text-white/70 sm:text-lg"
           >
-            StudentFinance+ tracks your cash spending, splits your allowance into smart budgets, and pings
-            you before you overspend. No bank login. No stress.
+            StudentFinance+ tracks your cash spending, splits your allowance into smart budgets, and
+            pings you before you overspend. No bank login. No stress.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 18 }}
@@ -139,7 +141,8 @@ function Hero() {
               search={{ mode: "signup" }}
               className="group inline-flex items-center gap-2 rounded-2xl bg-gradient-primary px-6 py-3.5 text-sm font-semibold text-white glow-purple transition-transform hover:scale-[1.03]"
             >
-              Start free <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              Start free{" "}
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <a
               href="#how"
@@ -162,7 +165,10 @@ function Hero() {
         </div>
 
         {/* 3D Phone */}
-        <div className="relative mx-auto w-full max-w-md lg:max-w-none" style={{ perspective: 1200 }}>
+        <div
+          className="relative mx-auto w-full max-w-md lg:max-w-none"
+          style={{ perspective: 1200 }}
+        >
           <motion.div
             style={{
               y: yPhone,
@@ -307,7 +313,8 @@ function Features() {
           Everything you need to <span className="text-gradient">crush school finances</span>
         </h2>
         <p className="mt-4 text-base text-white/70">
-          Designed with real Nigerian uni students. Built for the cash economy. No fluff, no bank logins.
+          Designed with real Nigerian uni students. Built for the cash economy. No fluff, no bank
+          logins.
         </p>
       </div>
       <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -354,8 +361,8 @@ function ShowcaseParallax() {
             Made for the way <span className="text-gradient">you actually live</span>
           </h2>
           <p className="mt-4 text-white/70">
-            Whether you're at FUNAAB lecture hall, the market in Akure, or back home in Lagos — log a spend
-            in 3 taps. Your dashboard updates instantly with insights that actually help.
+            Whether you're at FUNAAB lecture hall, the market in Akure, or back home in Lagos — log
+            a spend in 3 taps. Your dashboard updates instantly with insights that actually help.
           </p>
           <ul className="mt-6 space-y-3 text-sm text-white/80">
             {[
@@ -525,7 +532,8 @@ function FinalCTA() {
           Your future self will thank you.
         </motion.h2>
         <p className="relative mx-auto mt-3 max-w-xl text-white/85">
-          Join thousands of Nigerian students saving smarter every month. It's free, fast, and built for you.
+          Join thousands of Nigerian students saving smarter every month. It's free, fast, and built
+          for you.
         </p>
         <div className="relative mt-7 flex flex-wrap items-center justify-center gap-3">
           <Link
@@ -546,5 +554,3 @@ function FinalCTA() {
     </section>
   );
 }
-
-

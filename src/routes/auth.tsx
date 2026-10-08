@@ -4,22 +4,39 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff, ArrowLeft, Mail, Sparkles, ShieldCheck, Wallet, Target } from "lucide-react";
+import {
+  Loader2,
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  Mail,
+  Sparkles,
+  ShieldCheck,
+  Wallet,
+  Target,
+} from "lucide-react";
 import { Logo } from "@/components/Logo";
 import students from "@/assets/students.jpg";
 
 type Mode = "login" | "signup" | "forgot";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    mode: s.mode === "signup" ? "signup" : s.mode === "forgot" ? "forgot" : "login",
+  validateSearch: (s: Record<string, unknown>): { mode?: Mode } => ({
+    mode:
+      s.mode === "signup"
+        ? "signup"
+        : s.mode === "forgot"
+          ? "forgot"
+          : s.mode === "login"
+            ? "login"
+            : undefined,
   }),
   component: AuthPage,
 });
 
 function AuthPage() {
   const { mode: initial } = Route.useSearch();
-  const [mode, setMode] = useState<Mode>(initial as Mode);
+  const [mode, setMode] = useState<Mode>((initial as Mode) || "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -69,7 +86,11 @@ function AuthPage() {
   }
 
   const title =
-    mode === "signup" ? "Create your account" : mode === "forgot" ? "Reset password" : "Welcome back";
+    mode === "signup"
+      ? "Create your account"
+      : mode === "forgot"
+        ? "Reset password"
+        : "Welcome back";
   const subtitle =
     mode === "signup"
       ? "Start saving smarter today"
@@ -94,7 +115,10 @@ function AuthPage() {
 
       {/* top bar */}
       <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between px-4 py-4 sm:px-8">
-        <Link to="/" className="flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white">
+        <Link
+          to="/"
+          className="flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to home
         </Link>
         <Logo size="sm" />
@@ -256,7 +280,11 @@ function AuthPage() {
                   className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-5 py-3 text-sm font-semibold text-white glow-purple transition-transform active:scale-[0.98] disabled:opacity-60"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {mode === "signup" ? "Create account" : mode === "forgot" ? "Send reset link" : "Log in"}
+                  {mode === "signup"
+                    ? "Create account"
+                    : mode === "forgot"
+                      ? "Send reset link"
+                      : "Log in"}
                 </button>
               </form>
 
